@@ -130,7 +130,7 @@ node *symbol = TBmakeSymbol(FUNDEF_TYPE (arg_node), FUNDEF_NAME(arg_node), INFO_
       SYMBOL_NEXT(symbol) = PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
       PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
-  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
+    } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
@@ -207,12 +207,19 @@ node *SYMfunbody( node *arg_node, info * arg_info)
 node *SYMfor( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMfor");
-
-  FOR_
-
+  FOR_START(arg_node)=TRAVdo(FOR_START(arg_node), arg_info);
   DBUG_RETURN(arg_node);
 
 }
+
+node *SYMfor( node *arg_node, info * arg_info)
+{
+  DBUG_ENTER("SYMfor");
+  FOR_START(arg_node)=TRAVdo(FOR_START(arg_node), arg_info);
+  DBUG_RETURN(arg_node);
+
+}
+
 
 node *SYMvardec( node *arg_node, info * arg_info)
 {
@@ -263,15 +270,6 @@ node *SYMstmts( node *arg_node, info * arg_info)
   STMTS_NEXT(arg_node) = TRAVopt( STMTS_NEXT(arg_node), arg_info);
   DBUG_RETURN(arg_node);
 }
-
-node *SYMif( node *arg_node, info * arg_info)
-{
-  DBUG_ENTER("SYMstmts");  
-  printf("[DO SOMETHING]\n");
-  
-  DBUG_RETURN(arg_node);
-}
-
 
 /*
  * Traversal start function

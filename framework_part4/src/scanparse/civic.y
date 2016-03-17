@@ -176,39 +176,39 @@ assign: varlet LET expr SEMICOLON
 
 while: WHILE BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeWhile( $3, $6, NULL);
+          $$ = TBmakeWhile( $3, $6);
         }
         ;
 
 dowhile: DO CURLY_BRACKET_L stmts CURLY_BRACKET_R WHILE BRACKET_L expr BRACKET_R SEMICOLON
         {
-          $$ = TBmakeDowhile( $7, $3, NULL);
+          $$ = TBmakeDowhile( $7, $3);
         }
         ;
 
 if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX 
         {
-            $$ = TBmakeIf($3, $5, NULL, NULL);
+            $$ = TBmakeIf($3, $5, NULL);
         }
         |
         IF BRACKET_L expr BRACKET_R stmt ELSE stmt
         {
-            $$ = TBmakeIf($3, $5, $7, NULL);
+            $$ = TBmakeIf($3, $5, $7);
         }
         |
         IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R ELSE CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeIf($3, $6, $10, NULL);
+          $$ = TBmakeIf($3, $6, $10);
         }
         |
         IF BRACKET_L expr BRACKET_R stmt ELSE CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeIf( $3, $5, $8, NULL);
+          $$ = TBmakeIf( $3, $5, $8);
         }
         |
         IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R ELSE stmt
         {
-          $$ = TBmakeIf( $3, $6, $9, NULL);
+          $$ = TBmakeIf( $3, $6, $9);
         }        
         ;
 

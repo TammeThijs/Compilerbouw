@@ -12,7 +12,7 @@ extern node *SYMparam(node *arg_node, info *arg_info);
 extern node *SYMvardec(node *arg_node, info *arg_info);
 extern node *SYMfundefs(node *arg_node, info *arg_info);
 extern node *SYMstmts(node *arg_node, info *arg_info);
-extern node *SYMif(node *arg_node, info *arg_info);
+extern node *SYMfor(node *arg_node, info *arg_info);
 
 
 #endif
