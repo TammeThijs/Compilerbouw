@@ -67,6 +67,11 @@
 
         <traversal id = "LINK" name="Create links" default="sons" include="link.h">
           <travuser>
+            <node name="Program" />
+            <node name="FunDef" />
+            <node name="Funcall" />
+            <node name="VarLet" />
+            <node name="Var" />
           </travuser>
         </traversal>
 
