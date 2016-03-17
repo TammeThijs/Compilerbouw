@@ -14,5 +14,4 @@ extern node *SYMfundefs(node *arg_node, info *arg_info);
 extern node *SYMstmts(node *arg_node, info *arg_info);
 extern node *SYMfor(node *arg_node, info *arg_info);
 
-
 #endif

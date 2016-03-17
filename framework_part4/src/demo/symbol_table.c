@@ -119,28 +119,6 @@ node *SYMfundef( node *arg_node, info *arg_info)
   DBUG_ENTER("SYMfundef");
 
 
-node *symbol = TBmakeSymbol(FUNDEF_TYPE (arg_node), FUNDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
-
-  
-  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
-      if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
-      PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-      else{
-      SYMBOL_NEXT(symbol) = PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
-      PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-    } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
-     if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
-      FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-      else{
-      SYMBOL_NEXT(symbol) = FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
-      FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-
-  } 
-
   if(FUNDEF_PARAMS(arg_node)!=NULL || FUNDEF_FUNBODY(arg_node) != NULL){
 
     // // change state root node
@@ -204,23 +182,6 @@ node *SYMfunbody( node *arg_node, info * arg_info)
   DBUG_RETURN(arg_node);
 }
 
-node *SYMfor( node *arg_node, info * arg_info)
-{
-  DBUG_ENTER("SYMfor");
-  FOR_START(arg_node)=TRAVdo(FOR_START(arg_node), arg_info);
-  DBUG_RETURN(arg_node);
-
-}
-
-node *SYMfor( node *arg_node, info * arg_info)
-{
-  DBUG_ENTER("SYMfor");
-  FOR_START(arg_node)=TRAVdo(FOR_START(arg_node), arg_info);
-  DBUG_RETURN(arg_node);
-
-}
-
-
 node *SYMvardec( node *arg_node, info * arg_info)
 {
   node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
@@ -265,9 +226,30 @@ node *SYMstmts( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMstmts");  
 
-  STMTS_STMT(arg_node) = TRAVdo( STMTS_STMT(arg_node), arg_info);
-  
+  STMTS_STMT(arg_node) = TRAVdo( STMTS_STMT(arg_node), arg_info);  
   STMTS_NEXT(arg_node) = TRAVopt( STMTS_NEXT(arg_node), arg_info);
+  DBUG_RETURN(arg_node);
+
+}
+
+node *SYMfor( node *arg_node, info *arg_info)
+{
+  DBUG_ENTER("SYMfor");  
+
+  node *symbol = TBmakeSymbol(T_int, FOR_LOOPVAR( arg_node), INFO_STATE(arg_info), NULL);
+  node *tmp = INFO_ROOT_NODE(arg_info);
+
+  FOR_SYMBOLTABLE(arg_node) = symbol;
+  INFO_ROOT_NODE(arg_info) = arg_node;
+
+  INFO_STATE(arg_info) = INFO_STATE(arg_info)+1;
+
+  FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+
+
+  INFO_ROOT_NODE(arg_info) = tmp;
+  INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
+
   DBUG_RETURN(arg_node);
 }
 

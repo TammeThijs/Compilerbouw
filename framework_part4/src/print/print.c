@@ -132,6 +132,17 @@ PRTfundef (node * arg_node, info * arg_info)
   INFO_COUNT(arg_info) = INFO_COUNT(arg_info)+1;
   char *tmp;
   DBUG_ENTER("PRTfundef");
+
+  if(FUNDEF_SYMBOLTABLE(arg_node) != NULL){
+      printf("_SYMBOL TABLE FUNDEF\n");
+      FUNDEF_SYMBOLTABLE(arg_node) = TRAVopt(FUNDEF_SYMBOLTABLE(arg_node), arg_info);
+      printf("\n");
+  }
+  else{
+    printf("SYMBOL TABLE IS NULL\n");
+  }
+
+
   switch(FUNDEF_TYPE( arg_node)){
     case T_int:
       tmp = "int";
@@ -262,6 +273,8 @@ node *
 PRTfuncall (node * arg_node, info * arg_info)
 {
   DBUG_ENTER("PRTfuncall");
+  printf("%*s", (INFO_COUNT(arg_info)-1)*4, " ");
+
   printf("%s(", FUNCALL_NAME( arg_node));
   FUNCALL_ARGS( arg_node) = TRAVopt(FUNCALL_ARGS( arg_node), arg_info);
   printf(")");
@@ -284,6 +297,8 @@ node *
 PRTfunbody (node * arg_node, info * arg_info)
 {
   DBUG_ENTER("PRTfunbody");
+  printf("%*s", (INFO_COUNT(arg_info)-1)*4, " ");
+
   FUNBODY_VARDEC( arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node) = TRAVopt( FUNBODY_LOCALFUNDEFS( arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node) = TRAVopt( FUNBODY_STATEMENT( arg_node), arg_info);
@@ -331,7 +346,7 @@ PRTglobaldef (node * arg_node, info * arg_info)
 
   }
 
-  printf(" %s ",  GLOBALDEF_NAME( arg_node));
+  printf("%s ",  GLOBALDEF_NAME( arg_node));
 
   if(GLOBALDEF_INIT( arg_node) != NULL){
     printf(" = ");
@@ -500,7 +515,7 @@ PRTvardec (node * arg_node, info * arg_info)
     printf("]");
   }
 
-  printf(" %s ",  VARDEC_NAME( arg_node));
+  printf(" %s",  VARDEC_NAME( arg_node));
 
   if(VARDEC_INIT( arg_node) != NULL){
     printf(" = ");
@@ -540,6 +555,8 @@ PRTcast (node * arg_node, info * arg_info)
 {
   char *tmp;
   DBUG_ENTER ("PRTcast");
+  printf("%*s", INFO_COUNT(arg_info)*4, " ");
+
   switch(CAST_TYPE( arg_node)){
     case T_int:
       tmp = "int";
@@ -576,9 +593,13 @@ node *
 PRTif (node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTif");
+  printf("%*s", INFO_COUNT(arg_info)*4, " ");
   printf("if (");
+
+
   IF_CONDITION( arg_node) = TRAVdo( IF_CONDITION(arg_node), arg_info);
   printf(") {\n");
+
   IF_IFBLOCK (arg_node) = TRAVdo(IF_IFBLOCK(arg_node), arg_info);
   printf("}");
 
@@ -661,6 +682,8 @@ node *
 PRTfor(node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTfor");
+  printf("%*s", INFO_COUNT(arg_info)*4, " ");
+
 
   printf("for( int %s = ", FOR_LOOPVAR( arg_node));
   
@@ -675,8 +698,13 @@ PRTfor(node * arg_node, info * arg_info)
     FOR_STEP( arg_node) = TRAVopt( FOR_STEP( arg_node), arg_info);
   }
   printf(") {\n");
+  INFO_COUNT(arg_info) = INFO_COUNT(arg_info)+1;
   FOR_BLOCK( arg_node) = TRAVdo( FOR_BLOCK( arg_node), arg_info);
-  printf("\n}\n");
+  INFO_COUNT(arg_info) = INFO_COUNT(arg_info)+1;
+
+  printf("\n");
+  printf("%*s", INFO_COUNT(arg_info)*4, " ");
+  printf("}\n");
 
   DBUG_RETURN (arg_node);
 }
@@ -816,13 +844,13 @@ PRTassign (node * arg_node, info * arg_info)
   DBUG_ENTER ("PRTassign");
 
   ASSIGN_LET( arg_node) = TRAVdo( ASSIGN_LET( arg_node), arg_info);
-  printf( " = ");
+  printf( "= ");
   
   if (ASSIGN_EXPR( arg_node) != NULL) {
   ASSIGN_EXPR( arg_node) = TRAVdo( ASSIGN_EXPR( arg_node), arg_info);
   }
   
-  printf( ";");
+  printf(";");
   
   DBUG_RETURN (arg_node);
 }
@@ -895,7 +923,7 @@ PRTbinop (node * arg_node, info * arg_info)
       DBUG_ASSERT( 0, "unknown binop detected!");
   }
 
-  printf( " %s ", tmp);
+  printf( "%s ", tmp);
 
   BINOP_RIGHT( arg_node) = TRAVdo( BINOP_RIGHT( arg_node), arg_info);
 

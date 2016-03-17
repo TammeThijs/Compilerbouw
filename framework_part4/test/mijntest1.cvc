@@ -1,26 +1,19 @@
-extern int test;
-int abc = 4;
+float abc = 2.1;
 
-int func(int a, int b){
-	int a1 = 2;
-	int a2 = 1;
 
-	float foo(float z1){
+int main(){
 
-		bool check(int k){
-			return false;
-		}
+	int i = 1;
 
-		return z1+1.0;
+
+	int foo(){
+
+		int i = 1;
 	}
 
-	if(a1 == a2){
-		abc = 8;
-	}
-	 	
-	else {
-		return 2;
+	int bar(){
+
+		int i = 2;
 	}
 
-	return 0;
 }
