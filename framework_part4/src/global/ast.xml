@@ -65,6 +65,11 @@
           </travuser>
         </traversal>
 
+        <traversal id = "LINK" name="Create links" default="sons" include="link.h">
+          <travuser>
+          </travuser>
+        </traversal>
+
         <traversal id="COP" name="Count operators" default="sons" include="count_operators.h">
           <travuser>
             <node name="BinOp" />
