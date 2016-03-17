@@ -1,0 +1,18 @@
+void testfunctie(){
+
+	float a = -3.5;
+	float b = 2.0;
+	int c = 3;
+	bool een = true;
+	bool twee = false;
+	int[2] intarray;
+	bool[5] boolarray;
+	float[99] floatarray;
+
+	if(!twee){
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}

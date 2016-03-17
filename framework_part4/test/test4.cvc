@@ -1,0 +1,17 @@
+void main() {
+int a = -8;
+int b = foo(3);
+bool no = true;
+	do {b = b+b+a;} while (1>2);
+}
+
+
+int bar(){
+	return 1+2+3+4+5;
+}
+
+
+int foo(int i){
+	i = i+bar();
+	return i;
+}
