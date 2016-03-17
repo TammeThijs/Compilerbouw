@@ -103,10 +103,10 @@ node *LINKvar(node *arg_node, info *arg_info){
         symbol = INFO_STACK(arg_info)[scope];
       }
     }
-  }
+  
 
   if(!found){
-    DBUG_ERR("Variable has not been declared!");
+    printf("Variable has not been declared!");
   }
   DBUG_RETURN(arg_node);
 }
@@ -134,10 +134,10 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         symbol = INFO_STACK(arg_info)[scope];
       }
     }
-  }
+  
 
   if(!found){
-    DBUG_ERR("Variable has not been declared!");
+    printf("Variable has not been declared!");
   }
   DBUG_RETURN(arg_node);
 }
