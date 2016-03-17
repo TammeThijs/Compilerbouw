@@ -38,8 +38,14 @@ SUBPHASE( sym,
           "Create Symbol Table",
           SYMcreatesymboltable, 
           ALWAYS,
-          pet)  
+          pet)
 
+SUBPHASE( link, 
+          "Create Links",
+          LINKcreatelinks, 
+          ALWAYS,
+          pet)
+          
 SUBPHASE( cop, 
           "Count operators",
           COPdoCountOperators, 
