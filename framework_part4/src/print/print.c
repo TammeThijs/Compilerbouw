@@ -91,7 +91,7 @@ PRTsymbol (node * arg_node, info * arg_info)
       DBUG_ASSERT( 0, "unknown type detected!");
   }
 
-  printf("|   %s   |   %s   |   %d   |\n", tmp, SYMBOL_NAME(arg_node), SYMBOL_STATE(arg_node));
+  printf("|   %-8s|   %-10s|   %d   |\n", tmp, SYMBOL_NAME(arg_node), SYMBOL_STATE(arg_node));
 
   SYMBOL_NEXT(arg_node) = TRAVopt(SYMBOL_NEXT(arg_node), arg_info);
 
@@ -103,14 +103,17 @@ node *
 PRTprogram (node * arg_node, info * arg_info)
 {
   DBUG_ENTER("PRTprogram");
-  PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
   if(PROGRAM_SYMBOLTABLE(arg_node) != NULL){
-      printf("_SYMBOL TABLE PROGRAM_\n");
+      printf("[SYMBOL TABLE PROGRAM]\n");
       PROGRAM_SYMBOLTABLE(arg_node) = TRAVopt(PROGRAM_SYMBOLTABLE(arg_node), arg_info);
+      printf("\n");
   }
   else{
     printf("SYMBOL TABLE IS NULL\n");
   }
+
+  PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
+
   printf("\n");
   DBUG_RETURN(arg_node);
 }
@@ -134,7 +137,7 @@ PRTfundef (node * arg_node, info * arg_info)
   DBUG_ENTER("PRTfundef");
 
   if(FUNDEF_SYMBOLTABLE(arg_node) != NULL){
-      printf("_SYMBOL TABLE FUNDEF\n");
+      printf("\n[SYMBOL TABLE FUNDEF]\n");
       FUNDEF_SYMBOLTABLE(arg_node) = TRAVopt(FUNDEF_SYMBOLTABLE(arg_node), arg_info);
       printf("\n");
   }

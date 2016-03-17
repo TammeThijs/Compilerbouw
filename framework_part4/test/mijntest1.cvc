@@ -3,17 +3,17 @@ float abc = 2.1;
 
 int main(){
 
-	int i = 1;
+	int a = 1;
 
 
-	int foo(){
+	int foo(int b){
+		float c = 1.1;
+		bool flag = false;
 
-		int i = 1;
 	}
 
 	int bar(){
-
-		int i = 2;
+		int d = 2;
 	}
 
 }
