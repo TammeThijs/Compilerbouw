@@ -82,8 +82,17 @@ node *SYMdeclarations( node *arg_node, info *arg_info)
 
 node *SYMglobaldec( node *arg_node, info * arg_info)
 {
-  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), GLOBALDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
   DBUG_ENTER("SYMglobaldec");
+
+
+  char *name;
+  char buffer[10];
+  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+
+  name = GLOBALDEC_NAME( arg_node);
+  GLOBALDEC_NAME( arg_node) = STRcat(buffer , name);
+
+  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), GLOBALDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
 
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
@@ -93,6 +102,8 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
 
+  MEMfree(name); 
+
   DBUG_RETURN(arg_node);
 }
 
@@ -100,6 +111,13 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
 node *SYMglobaldef(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMglobaldef");
+
+  char *name;
+  char buffer[10];
+  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+
+  name = GLOBALDEF_NAME( arg_node);
+  GLOBALDEF_NAME( arg_node) = STRcat(buffer , name);
 
   node *symbol = TBmakeSymbol(GLOBALDEF_TYPE (arg_node), GLOBALDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
 
@@ -111,6 +129,7 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
 
+  MEMfree(name); 
   DBUG_RETURN(arg_node);
 }
 
@@ -143,9 +162,19 @@ node *SYMfundef( node *arg_node, info *arg_info)
 
 node *SYMparam( node *arg_node, info * arg_info)
 {
+  DBUG_ENTER("SYMparam");
+
+
+  //rename
+  char *name;
+  char buffer[10];
+  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+
+  name = PARAM_NAME( arg_node);
+  PARAM_NAME( arg_node) = STRcat(buffer , name);
+
 
   node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), PARAM_NAME( arg_node), INFO_STATE(arg_info), NULL);
-  DBUG_ENTER("SYMparam");
 
   if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
       if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
@@ -168,6 +197,7 @@ node *SYMparam( node *arg_node, info * arg_info)
 
   PARAM_NEXT( arg_node) = TRAVopt( PARAM_NEXT( arg_node), arg_info);
 
+  MEMfree(name);  
   DBUG_RETURN(arg_node);
 }
 
@@ -184,8 +214,19 @@ node *SYMfunbody( node *arg_node, info * arg_info)
 
 node *SYMvardec( node *arg_node, info * arg_info)
 {
-  node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
   DBUG_ENTER("SYMglobaldec");
+
+//rename
+  char *name;
+  char buffer[10];
+  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+
+  name = VARDEC_NAME( arg_node);
+  VARDEC_NAME( arg_node) = STRcat(buffer , name);
+
+  node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
+
+
 
    if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
@@ -209,6 +250,7 @@ node *SYMvardec( node *arg_node, info * arg_info)
 
   VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
 
+  MEMfree(name); 
   DBUG_RETURN(arg_node);
 }
 
@@ -245,7 +287,6 @@ node *SYMfor( node *arg_node, info *arg_info)
   INFO_STATE(arg_info) = INFO_STATE(arg_info)+1;
 
   FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
-
 
   INFO_ROOT_NODE(arg_info) = tmp;
   INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;

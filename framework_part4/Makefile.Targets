@@ -79,6 +79,6 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-demo        = count_operators.o opt_sub.o symbol_table.o link.o
+demo        = count_operators.o opt_sub.o symbol_table.o link.o rename_identifiers.o
 
 

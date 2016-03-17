@@ -1,12 +1,13 @@
-float abc = 2.1;
+extern bool istrue;
+
 
 
 int main(){
 
-	int a = 1;
+	int abc = 1;
 
 
-	int foo(int b){
+	int foo(int b, int c){
 		float c = 1.1;
 		bool flag = false;
 
@@ -14,6 +15,11 @@ int main(){
 
 	int bar(){
 		int d = 2;
+	}
+
+	for(int k = 0, 10){
+
+		abc = 2;		
 	}
 
 }
