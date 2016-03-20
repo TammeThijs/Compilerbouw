@@ -46,11 +46,6 @@ SUBPHASE( link,
           ALWAYS,
           pet)
 
-SUBPHASE( ri, 
-          "Rename identifiers",
-          RIdoRenameIdentifiers, 
-          ALWAYS,
-          pet) 
           
 SUBPHASE( cop, 
           "Count operators",

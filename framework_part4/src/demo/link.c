@@ -25,7 +25,7 @@
 
 
  struct INFO {
-  node * symboltableStack [20];
+  node *symboltableStack [20];
   int top;
   int size;
 };
@@ -38,6 +38,7 @@ info *push(info *arg_info, node *symbol){
   INFO_TOP(arg_info) = INFO_TOP(arg_info) + 1;
   printf("pushen symbol\n");
   INFO_STACK(arg_info)[INFO_TOP(arg_info)] = symbol;
+  printf("Symbol on stack: %i\n", INFO_TOP(arg_info));
   return arg_info;
 }
 
@@ -71,7 +72,10 @@ static info *FreeInfo( info *info)
 }
 node *LINKprogram( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKprogram");
-  arg_info = push(arg_info, PROGRAM_SYMBOLTABLE(arg_node));
+  if(PROGRAM_SYMBOLTABLE(arg_node)!=NULL){
+    arg_info = push(arg_info, PROGRAM_SYMBOLTABLE(arg_node));
+  }
+  
   printf("programma...\n");
   PROGRAM_DECLARATIONS(arg_node) =  TRAVdo(PROGRAM_DECLARATIONS( arg_node), arg_info); 
   DBUG_RETURN(arg_node);

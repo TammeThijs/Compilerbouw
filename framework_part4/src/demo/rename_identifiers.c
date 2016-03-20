@@ -12,7 +12,7 @@
  *****************************************************************************/
 
 
-#include "rename_identifiers.h"
+/*#include "rename_identifiers.h"
 
 #include "types.h"
 #include "tree_basic.h"
@@ -27,7 +27,7 @@
  * Traversal functions
  */
 
-node *RIvarlet( node *arg_node, info *arg_info)
+/*node *RIvarlet( node *arg_node, info *arg_info)
 {
   char *name;
 
@@ -62,7 +62,7 @@ node *RIvar( node *arg_node, info *arg_info)
  * Traversal start function
  */
 
-node *RIdoRenameIdentifiers( node *syntaxtree)
+/*node *RIdoRenameIdentifiers( node *syntaxtree)
 {
   DBUG_ENTER("RIdoRenameIdentifiers");
 
@@ -73,4 +73,4 @@ node *RIdoRenameIdentifiers( node *syntaxtree)
   TRAVpop();          // Pop current traversal
 
   DBUG_RETURN( syntaxtree);
-}
+}*/
