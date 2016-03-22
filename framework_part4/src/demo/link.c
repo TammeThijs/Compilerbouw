@@ -26,15 +26,19 @@
 
  struct INFO {
   node *symboltableStack [20];
+  node *functionList[20];
   int top;
   int size;
   int scope;
+  int counter;
 };
 
 #define INFO_STACK(n) ((n)->symboltableStack)
+#define INFO_LIST(n) ((n)->functionList)
 #define INFO_TOP(n) ((n)->top)
 #define INFO_SIZE(n) ((n)->size)
 #define INFO_SCOPE(n) ((n)->scope)
+#define INFO_COUNTER(n) ((n)->counter)
 
 info *push(info *arg_info, node *symbol){
   INFO_TOP(arg_info) = INFO_TOP(arg_info) + 1;
@@ -42,6 +46,11 @@ info *push(info *arg_info, node *symbol){
   return arg_info;
 }
 
+info *add(info * arg_info, node *fsymbol){
+  INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
+  INFO_LIST(arg_info)[INFO_COUNTER(arg_info)] = fsymbol;
+  return arg_info;
+}
 info *pop(info *arg_info){
   INFO_STACK(arg_info)[INFO_TOP(arg_info)] = NULL;
   INFO_TOP(arg_info) = INFO_TOP(arg_info) -1;
@@ -59,6 +68,7 @@ static info *MakeInfo(void)
   INFO_TOP( result)= 0;
   INFO_SIZE(result) = 20;
   INFO_SCOPE( result) = 0;
+  INFO_COUNTER( result) = 0;
   DBUG_RETURN( result);
 }
 
@@ -75,14 +85,21 @@ node *LINKprogram( node *arg_node, info *arg_info){
   if(PROGRAM_SYMBOLTABLE(arg_node)!=NULL){
     arg_info = push(arg_info, PROGRAM_SYMBOLTABLE(arg_node));
   }
-  
+  if(PROGRAM_FSYMBOLTABLE(arg_node)!=NULL){
+    arg_info = add(arg_info, PROGRAM_FSYMBOLTABLE(arg_node));
+  }
   PROGRAM_DECLARATIONS(arg_node) =  TRAVdo(PROGRAM_DECLARATIONS( arg_node), arg_info); 
   DBUG_RETURN(arg_node);
 }
 
 node *LINKfundef( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKfundef");
-  arg_info = push(arg_info, FUNDEF_SYMBOLTABLE(arg_node));
+  if(FUNDEF_SYMBOLTABLE(arg_node)!=NULL){
+    arg_info = push(arg_info, FUNDEF_SYMBOLTABLE(arg_node));
+  }
+  if(FUNDEF_FSYMBOLTABLE(arg_node)!=NULL){
+    arg_info = add(arg_info, FUNDEF_FSYMBOLTABLE(arg_node));
+  }
   INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
   FUNDEF_FUNBODY(arg_node) =TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
   INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
@@ -119,9 +136,8 @@ node *LINKvar(node *arg_node, info *arg_info){
   
 
   if(!found){
-    printf("Variable has not been declared!");
+    CTIerrorLine(NODE_LINE(arg_node), "Variabele is niet gedeclareerd");
   }
-  DBUG_RETURN(arg_node);
   DBUG_RETURN(arg_node);
 }
 
@@ -155,13 +171,43 @@ node *LINKvarlet(node *arg_node, info *arg_info){
   
 
   if(!found){
-    printf("Variable has not been declared!");
+    CTIerrorLine(NODE_LINE(arg_node), "Variabele is niet gedeclareerd!");
   }
   DBUG_RETURN(arg_node);
 }
 
 node *LINKfuncall(node *arg_node, info *arg_info){
   DBUG_ENTER("Linkfuncall");
+  int i = INFO_COUNTER(arg_info);
+  node *fsymbol = INFO_LIST(arg_info)[i];
+  bool found = false;
+  
+  while(!found && i > 0){
+    while(fsymbol == NULL && i>0){
+      i--;
+      fsymbol = INFO_LIST(arg_info)[i];
+    }
+    if(fsymbol == NULL){
+      break;
+    }
+    else{
+      char *symbolName = FSYMBOL_NAME(fsymbol);
+      char *funName = FUNCALL_NAME(arg_node);
+      if(STReq(funName, symbolName)){
+        FUNCALL_DECL(arg_node) = fsymbol;
+        printf("%s Gevonden!\n", funName);
+        found = true;
+      }
+      else{
+          fsymbol = FSYMBOL_NEXT(fsymbol);
+      }
+    }
+  }
+  
+
+  if(!found){
+    CTIerrorLine(NODE_LINE(arg_node), "Functie is niet gedeclareerd");
+  }
   DBUG_RETURN(arg_node);
 }
 

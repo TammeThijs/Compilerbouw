@@ -98,6 +98,18 @@ PRTsymbol (node * arg_node, info * arg_info)
   DBUG_RETURN (arg_node);
 }
 
+node *
+PRTfsymbol (node * arg_node, info * arg_info)
+{
+
+  DBUG_ENTER ("PRTsymbol");
+
+  printf("funtion name: %s", FSYMBOL_NAME(arg_node));
+
+  FSYMBOL_NEXT(arg_node) = TRAVopt(FSYMBOL_NEXT(arg_node), arg_info);
+
+  DBUG_RETURN (arg_node);
+}
 
 node *
 PRTprogram (node * arg_node, info * arg_info)

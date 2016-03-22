@@ -1,9 +1,11 @@
+extern int global;
 int main(){
 	int i = 1;
 	int foo(){
 		int b;
 		b = i + 2;
-		return b;
+		return b + c;
 	}
+	global = foo();
 	return 0;
 }

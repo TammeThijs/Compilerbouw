@@ -50,7 +50,9 @@
           </travuser>
         </traversal>-->
 
-        <traversal id="SYM" name="Create Symbol Table" default="sons" include="symbol_table.h">
+        <traversal id="SYM" name="Create Symbol Table" default="sons" include="symbol_table.h">if(symbol == NULL){
+        scope--;
+      }
           <travuser>
             <node name="Program"/>
             <node name="Declarations"/>
@@ -157,10 +159,21 @@
           </target>
         </targets>
       </son>
+      <son name="FSymbolTable">
+        <targets>
+          <target mandatory="no">
+            <node name="FSymbol" />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </son>
     </sons>
     <attributes>
     </attributes>
   </node>
+
   <node name="Symbol">
     <sons>
       <son name="Next">
@@ -214,6 +227,58 @@
     </attributes>
   </node>
 
+<node name="FSymbol">
+    <sons>
+      <son name="Next">
+        <targets>
+          <target mandatory="no">
+            <node name="FSymbol" />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </son>
+    </sons>
+    <attributes>
+      <attribute name="Function">
+        <type name="Link">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Name">
+        <type name="String">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Scope">
+        <type name="Int">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+    </attributes>
+  </node>
 
   <!-- Node Declarations:-->
 
@@ -296,6 +361,16 @@
         <targets>
           <target mandatory="no">
             <node name="Symbol" />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </son>
+      <son name="FSymbolTable">
+        <targets>
+          <target mandatory="no">
+            <node name="FSymbol" />
             <phases>
               <all />
             </phases>

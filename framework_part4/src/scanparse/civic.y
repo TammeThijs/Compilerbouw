@@ -67,7 +67,7 @@ static int yyerror( char *errname);
 
 program: declarations
          {
-           parseresult = TBmakeProgram($1, NULL);
+           parseresult = TBmakeProgram($1, NULL, NULL);
          }
          ;
 
@@ -285,35 +285,35 @@ fundef: EXPORT fundef
         }
         |type ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef($1, $2, NULL, $6, NULL);
+          $$ = TBmakeFundef($1, $2, NULL, $6, NULL, NULL);
         }
         | VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef(T_unknown, $2, NULL, $6, NULL);
+          $$ = TBmakeFundef(T_unknown, $2, NULL, $6, NULL, NULL);
         }
         | type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef($1, $2, $4, $7, NULL);
+          $$ = TBmakeFundef($1, $2, $4, $7, NULL, NULL);
         }
         | VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef(T_unknown, $2, $4, $7, NULL);
+          $$ = TBmakeFundef(T_unknown, $2, $4, $7, NULL, NULL);
         }
         | type ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( $1, $2, NULL, NULL, NULL);
+          $$ = TBmakeFundef( $1, $2, NULL, NULL, NULL, NULL);
         }
         | VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( T_unknown, $2, NULL, NULL, NULL);
+          $$ = TBmakeFundef( T_unknown, $2, NULL, NULL, NULL, NULL);
         }
         | type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( $1, $2, $4, NULL, NULL);
+          $$ = TBmakeFundef( $1, $2, $4, NULL, NULL, NULL);
         }
         | VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( T_unknown, $2, $4, NULL, NULL);
+          $$ = TBmakeFundef( T_unknown, $2, $4, NULL, NULL, NULL);
         }
         ; 
 

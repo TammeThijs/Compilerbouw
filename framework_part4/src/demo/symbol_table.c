@@ -84,7 +84,6 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMglobaldec");
 
-
   char *name;
   char buffer[10];
   snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
@@ -136,8 +135,25 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 node *SYMfundef( node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMfundef");
+node * fsymbol = TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
+if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
+      if(PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+      PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
+    }
+      else{
+      FSYMBOL_NEXT(fsymbol) = PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info));
+      PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
+    }
+  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
+     if(FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+      FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
+    }
+      else{
+      FSYMBOL_NEXT(fsymbol) = FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info));
+      FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
+    }
 
-
+  }
   if(FUNDEF_PARAMS(arg_node)!=NULL || FUNDEF_FUNBODY(arg_node) != NULL){
 
     // // change state root node
@@ -154,9 +170,6 @@ node *SYMfundef( node *arg_node, info *arg_info)
     INFO_ROOT_NODE(arg_info) = tmp;
     INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
   }
-
-  
-
   DBUG_RETURN(arg_node);
 }
 
@@ -184,7 +197,7 @@ node *SYMparam( node *arg_node, info * arg_info)
       SYMBOL_NEXT(symbol) = PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
       PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
-  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
+  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
@@ -225,10 +238,7 @@ node *SYMvardec( node *arg_node, info * arg_info)
   VARDEC_NAME( arg_node) = STRcat(buffer , name);
 
   node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
-
-
-
-   if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 5) {
+   if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
