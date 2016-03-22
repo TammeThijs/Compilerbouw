@@ -1,7 +1,9 @@
 int main(){
-	int i;
+	int i = 1;
 	int foo(){
 		int b;
-		b = 2;
+		b = i + 2;
+		return b;
 	}
+	return 0;
 }

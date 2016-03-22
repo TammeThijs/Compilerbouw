@@ -28,23 +28,22 @@
   node *symboltableStack [20];
   int top;
   int size;
+  int scope;
 };
 
 #define INFO_STACK(n) ((n)->symboltableStack)
 #define INFO_TOP(n) ((n)->top)
 #define INFO_SIZE(n) ((n)->size)
+#define INFO_SCOPE(n) ((n)->scope)
 
 info *push(info *arg_info, node *symbol){
   INFO_TOP(arg_info) = INFO_TOP(arg_info) + 1;
-  printf("pushen symbol\n");
   INFO_STACK(arg_info)[INFO_TOP(arg_info)] = symbol;
-  printf("Symbol on stack: %i\n", INFO_TOP(arg_info));
   return arg_info;
 }
 
 info *pop(info *arg_info){
   INFO_STACK(arg_info)[INFO_TOP(arg_info)] = NULL;
-  printf("pop symbol\n");
   INFO_TOP(arg_info) = INFO_TOP(arg_info) -1;
   return arg_info;
 }
@@ -59,6 +58,7 @@ static info *MakeInfo(void)
 
   INFO_TOP( result)= 0;
   INFO_SIZE(result) = 20;
+  INFO_SCOPE( result) = 0;
   DBUG_RETURN( result);
 }
 
@@ -76,7 +76,6 @@ node *LINKprogram( node *arg_node, info *arg_info){
     arg_info = push(arg_info, PROGRAM_SYMBOLTABLE(arg_node));
   }
   
-  printf("programma...\n");
   PROGRAM_DECLARATIONS(arg_node) =  TRAVdo(PROGRAM_DECLARATIONS( arg_node), arg_info); 
   DBUG_RETURN(arg_node);
 }
@@ -84,40 +83,45 @@ node *LINKprogram( node *arg_node, info *arg_info){
 node *LINKfundef( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKfundef");
   arg_info = push(arg_info, FUNDEF_SYMBOLTABLE(arg_node));
+  INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
   FUNDEF_FUNBODY(arg_node) =TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+  INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
   arg_info = pop(arg_info);
   DBUG_RETURN(arg_node);
 }
 node *LINKvar(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvar");
-  printf("variabele controleren...");
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
   
-  while(!found && scope >= 0){
-    printf("in de loop");
-    while(SYMBOL_NEXT(symbol)!= NULL && !found){
-      if(STReq(SYMBOL_NAME(symbol), VAR_NAME(arg_node))){
+  while(!found && scope > 0){
+    while(symbol == NULL && scope>0){
+      scope--;
+      symbol = INFO_STACK(arg_info)[scope];
+    }
+    if(symbol == NULL){
+      break;
+    }
+    else{
+      char *symbolName = SYMBOL_NAME(symbol);
+      char *varName = VAR_NAME(arg_node);
+      if(STRsuffix(varName, symbolName)){
         VAR_DECL(arg_node) = symbol;
+        printf("%s Gevonden!\n", varName);
         found = true;
       }
       else{
-        symbol = SYMBOL_NEXT(symbol);
-      }
-    }
-    if(!found){
-      symbol = NULL;
-      while(symbol == NULL && scope>=0){
-        scope--;
-        symbol = INFO_STACK(arg_info)[scope];
+          symbol = SYMBOL_NEXT(symbol);
       }
     }
   }
+  
 
   if(!found){
     printf("Variable has not been declared!");
   }
+  DBUG_RETURN(arg_node);
   DBUG_RETURN(arg_node);
 }
 
@@ -125,32 +129,30 @@ node *LINKvarlet(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvarlet");
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
-  while(symbol == NULL && scope>=0){
-        scope--;
-        symbol = INFO_STACK(arg_info)[scope];
-      }
   bool found = false;
-  printf("varlet controleren");
-  while(!found && scope >= 0){
-    printf("in de loop");
-    while(SYMBOL_NEXT(symbol)!= NULL && !found){
-      printf("in loop 2 met namen: %s, %s\n", SYMBOL_NAME(symbol), VAR_NAME(arg_node));
-      if(STReq(SYMBOL_NAME(symbol), VAR_NAME(arg_node))){
-        VAR_DECL(arg_node) = symbol;
+  
+  while(!found && scope > 0){
+    while(symbol == NULL && scope>0){
+      scope--;
+      symbol = INFO_STACK(arg_info)[scope];
+    }
+    if(symbol == NULL){
+      break;
+    }
+    else{
+      char *symbolName = SYMBOL_NAME(symbol);
+      char *varletName = VARLET_NAME(arg_node);
+      if(STRsuffix(varletName, symbolName)){
+        VARLET_DECL(arg_node) = symbol;
+        printf("%s is Gevonden!\n", varletName);
         found = true;
       }
       else{
-        symbol = SYMBOL_NEXT(symbol);
-      }
-    }
-    if(!found){
-      symbol = NULL;
-      while(symbol == NULL && scope>=0){
-        scope--;
-        symbol = INFO_STACK(arg_info)[scope];
+          symbol = SYMBOL_NEXT(symbol);
       }
     }
   }
+  
 
   if(!found){
     printf("Variable has not been declared!");
@@ -169,7 +171,7 @@ node *LINKcreatelinks( node *syntaxtree)
   info *arg_info;
 
   DBUG_ENTER("LINKcreatelinks");
-  printf("links maken");
+  printf("links maken\n");
 
   arg_info = MakeInfo();
 
