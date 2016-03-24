@@ -59,6 +59,12 @@ SUBPHASE( init,
           pet
           )
           
+SUBPHASE( rw, 
+          "Rewrite code",
+          RWrewritecode, 
+          ALWAYS,
+          pet)
+
 SUBPHASE( cop, 
           "Count operators",
           COPdoCountOperators, 

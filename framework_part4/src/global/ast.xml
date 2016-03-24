@@ -95,6 +95,13 @@
           </travuser>
         </traversal>
 
+        <traversal id="RW" name="Rewrite Code" default="sons" include="rewrite.h">
+          <travuser>
+            <node name="BinOp" />
+            <node name="Cast" />
+          </travuser>
+        </traversal>
+        
         <traversal id="COP" name="Count operators" default="sons" include="count_operators.h">
           <travuser>
             <node name="BinOp" />
