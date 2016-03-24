@@ -51,6 +51,13 @@ SUBPHASE( ct,
           CTchecktypes, 
           ALWAYS,
           pet) 
+
+SUBPHASE( init,
+          "Initialisations to regular Assignments",
+          INITdoInitToReg,
+          ALWAYS, 
+          pet
+          )
           
 SUBPHASE( cop, 
           "Count operators",
