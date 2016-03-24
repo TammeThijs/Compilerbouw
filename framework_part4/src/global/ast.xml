@@ -43,13 +43,6 @@
         <traversal id="FREE" name="Free Syntax Tree" default="user" include="free_node.h" />
         <traversal id="CHK" name="Check Syntax Tree" default="user" include="check.h" />
 
-        <!--<traversal id="RI" name="Rename identifiers" default="sons" include="rename_identifiers.h">
-          <travuser>
-            <node name="Var" />
-            <node name="VarLet" />
-          </travuser>
-        </traversal>-->
-
         <traversal id="SYM" name="Create Symbol Table" default="sons" include="symbol_table.h">
           <travuser>
             <node name="Program"/>
@@ -62,6 +55,13 @@
             <node name="FunDefs"/>
             <node name="Stmts"/>
             <node name="For"/>
+          </travuser>
+        </traversal>
+
+        <traversal id="INIT" name="Initialisations to regular Assignments" default="sons" include="init_to_reg.h">
+          <travuser>
+            <node name="GlobalDec" />
+            <node name="GlobalDef"/>
           </travuser>
         </traversal>
 
