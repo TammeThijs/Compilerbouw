@@ -234,7 +234,7 @@ return:   RETURN expr SEMICOLON
 
 exprstmt: ID BRACKET_L expr BRACKET_R SEMICOLON
         {
-          TBmakeExprstmt($3);
+          $$ = TBmakeExprstmt($3);
         }
         ;
 
@@ -409,7 +409,7 @@ expr: constant
       {
         $$ = $1;
       }
-    | BRACKET_L expr BRACKET_R
+    | BRACKET_L expr BRACKET_R 
     {
         $$ = $2;
     }   
