@@ -50,9 +50,7 @@
           </travuser>
         </traversal>-->
 
-        <traversal id="SYM" name="Create Symbol Table" default="sons" include="symbol_table.h">if(symbol == NULL){
-        scope--;
-      }
+        <traversal id="SYM" name="Create Symbol Table" default="sons" include="symbol_table.h">
           <travuser>
             <node name="Program"/>
             <node name="Declarations"/>
