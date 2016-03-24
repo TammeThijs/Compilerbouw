@@ -23,10 +23,10 @@
 #include "ctinfo.h"
 
  struct INFO {
-  node *last_vardec;
+  node *lastVardec;
 };
 
-#define INFO_INIT_VARDEC(n) ((n)->last_vardec)
+#define INFO_INIT_VARDEC(n) ((n)->lastVardec)
 
 
 static info *MakeInfo(void)
@@ -69,9 +69,8 @@ static info *FreeInfo( info *info)
 
   } else {
     vardec = TBmakeVardec(GLOBALDEC_TYPE(arg_node), GLOBALDEC_NAME(arg_node), NULL, NULL, INFO_INIT_VARDEC(arg_info));
-    INFO_INIT_VARDEC(vardec);  
+    INFO_INIT_VARDEC(arg_info) = vardec;  
   }
-
 
   DBUG_RETURN(NULL);
  }
@@ -90,7 +89,7 @@ static info *FreeInfo( info *info)
 
   } else {
     vardec = TBmakeVardec(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), NULL, NULL, INFO_INIT_VARDEC(arg_info));
-    INFO_INIT_VARDEC(vardec);  
+    INFO_INIT_VARDEC(arg_info) = vardec;  
   }
 
   node *varlet = TBmakeVarlet(GLOBALDEF_NAME(arg_node), NULL);

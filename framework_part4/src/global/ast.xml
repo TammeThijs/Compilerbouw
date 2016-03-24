@@ -58,12 +58,13 @@
           </travuser>
         </traversal>
 
-        <!--<traversal id="INIT" name="Initialisations to regular Assignments" default="sons" include="init_to_reg.h">
+        <traversal id="INIT" name="Initialisations to regular Assignments" default="sons" include="init_to_reg.h">
           <travuser>
             <node name="GlobalDec" />
             <node name="GlobalDef"/>
+            <node name="FunFunbody"/>
           </travuser>
-        </traversal>-->
+        </traversal>
 
         <traversal id = "LINK" name="Create links" default="sons" include="link.h">
           <travuser>
