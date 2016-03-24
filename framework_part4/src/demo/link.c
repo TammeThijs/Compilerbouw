@@ -211,22 +211,27 @@ node *LINKfuncall(node *arg_node, info *arg_info){
   else{
     int paramcount = 0;
     int argumentcount = 0;
-    if(FUNDEF_PARAMS(FSYMBOL_FUNCTION(fsymbol))!=NULL){
+    node * param = FUNDEF_PARAMS(FSYMBOL_FUNCTION(fsymbol));
+    node *args = FUNCALL_ARGS(arg_node);
+    if(param!=NULL){
       paramcount++;
-      while(PARAM_NEXT(FUNDEF_PARAMS(FSYMBOL_FUNCTION(fsymbol)))!=NULL){
+      while(PARAM_NEXT(param)!=NULL){
         paramcount++;
+        param = PARAM_NEXT(param);
       }
     }
-    if(FUNCALL_ARGS(arg_node)!=NULL){
+    if(args!=NULL){
       argumentcount++;
-      while(EXPRS_NEXT(FUNCALL_ARGS(arg_node))!=NULL){
+      while(EXPRS_NEXT(args)!=NULL){
         argumentcount++;
+        args = EXPRS_NEXT(args);
       }
     }
     if(paramcount != argumentcount){
       CTIerrorLine(NODE_LINE(arg_node), "Onjuiste aantal argumenten...");
     }
   }
+  FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
   DBUG_RETURN(arg_node);
 }
 

@@ -42,7 +42,29 @@ node *CTprogram(node *arg_node, info *arg_info){
 
 node *CTfuncall(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfuncall");
-	INFO_TYPE(arg_info) = FUNDEF_TYPE(FUNCALL_DECL(arg_node));
+	if(FUNCALL_ARGS(arg_node)!=NULL){
+		node *args = FUNCALL_ARGS(arg_node);
+		node * param = FUNDEF_PARAMS(FSYMBOL_FUNCTION(FUNCALL_DECL(arg_node)));
+		EXPRS_EXPRS(args) = TRAVdo(EXPRS_EXPRS(args), arg_info);
+		type exprtype = INFO_TYPE(arg_info);
+		type paramtype = PARAM_TYPE(param);
+		if(exprtype != paramtype){
+			CTIerrorLine(NODE_LINE(arg_node), "argumenttype matcht niet met functiedefinitie");
+		}
+
+
+		while(EXPRS_NEXT(args)!=NULL){
+			args = EXPRS_NEXT(args);
+			param = PARAM_NEXT(param);
+			EXPRS_EXPRS(args) = TRAVdo(EXPRS_EXPRS(args), arg_info);
+			exprtype = INFO_TYPE(arg_info);
+			paramtype = PARAM_TYPE(param);
+			if(exprtype != paramtype){
+				CTIerrorLine(NODE_LINE(arg_node), "argumenttype matcht niet met functiedefinitie");
+			}
+		}
+	}
+	INFO_TYPE(arg_info) = FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(arg_node)));
 	DBUG_RETURN(arg_node);
 }
 
@@ -98,16 +120,36 @@ node *CTvar(node *arg_node, info *arg_info){
 
 node *CTcast(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTcast");
+	INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
 	DBUG_RETURN(arg_node);
 }
 
 node * CTbinop(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTbinop");
+	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+	type typeleft = INFO_TYPE(arg_info);
+	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+	type typeright = INFO_TYPE(arg_info);
+	if(typeleft != typeright){
+		CTIerrorLine(NODE_LINE(arg_node), "De types van de linker en rechter expressie van de binaire operator matchen niet");
+	}
 	DBUG_RETURN(arg_node);
 }
 
 node *CTmonop(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTmonop");
+	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node * CTreturn(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTreturn");
+	if(RETURN_EXPRESSION(arg_node) == NULL){
+		INFO_TYPE(arg_info) = T_unknown;
+	}
+	else{
+		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+	}
 	DBUG_RETURN(arg_node);
 }
 

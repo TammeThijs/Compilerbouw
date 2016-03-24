@@ -4,6 +4,17 @@ int main(){
 	int k;
 	float x = 1.2;
 	bool y = false;
-	k = i;
+	
+	y = hoi(j);
+	k = i + j;
 	return 0;
+}
+bool hoi(int x){
+	bool y = (bool) x;
+	if(!y){
+		return false;
+	}
+	else{
+		return true;
+	}
 }
