@@ -1,6 +1,9 @@
 int main(){
 	int i = 0;
 	int j = 1;
-	int k = i+j;
+	int k;
+	float x = 1.2;
+	bool y = false;
+	k = i;
 	return 0;
 }

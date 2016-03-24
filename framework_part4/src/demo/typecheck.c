@@ -10,12 +10,10 @@
 #include "ctinfo.h"
 
  struct INFO {
-  type typeStack[20];
-  int counter;
+  type lastType;
 };
 
-#define INFO_STACK(n) ((n)->typeStack)
-#define INFO_COUNTER(n) ((n)->counter)
+#define INFO_TYPE(n)((n)->lastType)
 
 static info *MakeInfo(void)
 {
@@ -24,7 +22,6 @@ static info *MakeInfo(void)
   DBUG_ENTER( "MakeInfo");
 
   result = (info *)MEMmalloc(sizeof(info));
-  INFO_COUNTER(result) = 0;
 
   DBUG_RETURN( result);
 }
@@ -45,55 +42,93 @@ node *CTprogram(node *arg_node, info *arg_info){
 
 node *CTfuncall(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfuncall");
-
+	INFO_TYPE(arg_info) = FUNDEF_TYPE(FUNCALL_DECL(arg_node));
 	DBUG_RETURN(arg_node);
 }
 
+node *CTfundef(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTfundef");
+	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node)){
+		CTIerrorLine(NODE_LINE(arg_node), "Returntype is niet hetzelfde als functietype");
+	}
+	DBUG_RETURN(arg_node);
+}
 node *CTvarlet(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvarlet");
+	
+	INFO_TYPE(arg_info) = SYMBOL_TYPE(VARLET_DECL(arg_node));
 	DBUG_RETURN(arg_node);
 }
 
 node *CTvardec(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvardec");
 	if(VARDEC_INIT(arg_node)!= NULL){
-		printf("In de init van de vardec\n");
 		VARDEC_INIT(arg_node) = TRAVdo(VARDEC_INIT(arg_node), arg_info);
-		type vartype = INFO_STACK(arg_info)[INFO_COUNTER(arg_info)];
+		type vartype = INFO_TYPE(arg_info);
 		if(vartype == T_int){
-			printf("vartype is int");
+			printf("vartype is int\n");
+		}
+		if(vartype != VARDEC_TYPE(arg_node)){
+			CTIerrorLine(NODE_LINE(arg_node), "Type variabele klopt niet");
 		}
 	}
+	VARDEC_NEXT(arg_node) = TRAVopt(VARDEC_NEXT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
+node *CTassign(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTassign");
+	printf("in de assign node");
+
+	ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+	type vartype = INFO_TYPE(arg_info);
+	ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
+	type exprtype = INFO_TYPE(arg_info);
+	if(vartype != exprtype){
+		CTIerrorLine(NODE_LINE(arg_node), "De expressie van de assign geeft het verkeerde type");
+	}
+	DBUG_RETURN(arg_node);
+}
 node *CTvar(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvar");
+	INFO_TYPE(arg_info) = SYMBOL_TYPE(VAR_DECL(arg_node));
+	DBUG_RETURN(arg_node);
+}
 
+node *CTcast(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTcast");
+	DBUG_RETURN(arg_node);
+}
+
+node * CTbinop(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTbinop");
+	DBUG_RETURN(arg_node);
+}
+
+node *CTmonop(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTmonop");
 	DBUG_RETURN(arg_node);
 }
 
 node *CTnum(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTNum");
-	INFO_STACK(arg_info)[INFO_COUNTER(arg_info)] = T_int;
-	INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info) + 1;
-	printf("Int op de stack\n");
+	INFO_TYPE(arg_info) = T_int;
+	printf("int toegevoegd\n");
 	DBUG_RETURN(arg_node);
 }
 
 node *CTbool(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTBool");
-	INFO_STACK(arg_info)[INFO_COUNTER(arg_info)] = T_boolean;
-	INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info) + 1;
-	printf("boolean op de stack");
+	INFO_TYPE(arg_info) = T_boolean;
+	printf("boolean toegevoegd\n");
 	DBUG_RETURN(arg_node);
 }
 
 node *CTfloat(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTFloat");
-	INFO_STACK(arg_info)[INFO_COUNTER(arg_info)] = T_float;
-	INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info) + 1;
-	printf("float op de stack");
+	INFO_TYPE(arg_info) = T_float;
+	printf("float toegevoegd\n");
 	DBUG_RETURN(arg_node);
 }
 

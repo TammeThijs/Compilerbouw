@@ -79,7 +79,12 @@
           <travuser>
             <node name="Program" />
             <node name="Funcall" />
+            <node name="FunDef" />
+            <node name="Assign"/>
             <node name="VarLet" />
+            <node name="BinOp" />
+            <node name="MonOp" />
+            <node name="Cast" />
             <node name="Var" />
             <node name="Num" />
             <node name="Float" />
@@ -992,7 +997,7 @@
     </son>
     <son name="Expr">
       <targets>
-        <target mandatory="no">
+        <target mandatory="yes">
           <set name="Expr" />
           <phases>
             <all />
