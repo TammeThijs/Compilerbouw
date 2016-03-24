@@ -208,6 +208,25 @@ node *LINKfuncall(node *arg_node, info *arg_info){
   if(!found){
     CTIerrorLine(NODE_LINE(arg_node), "Functie is niet gedeclareerd");
   }
+  else{
+    int paramcount = 0;
+    int argumentcount = 0;
+    if(FUNDEF_PARAMS(FSYMBOL_FUNCTION(fsymbol))!=NULL){
+      paramcount++;
+      while(PARAM_NEXT(FUNDEF_PARAMS(FSYMBOL_FUNCTION(fsymbol)))!=NULL){
+        paramcount++;
+      }
+    }
+    if(FUNCALL_ARGS(arg_node)!=NULL){
+      argumentcount++;
+      while(EXPRS_NEXT(FUNCALL_ARGS(arg_node))!=NULL){
+        argumentcount++;
+      }
+    }
+    if(paramcount != argumentcount){
+      CTIerrorLine(NODE_LINE(arg_node), "Onjuiste aantal argumenten...");
+    }
+  }
   DBUG_RETURN(arg_node);
 }
 

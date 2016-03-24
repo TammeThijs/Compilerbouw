@@ -77,6 +77,19 @@
           </travuser>
         </traversal>
 
+        <traversal id = "CT" name="Check Types " default="sons" include="typecheck.h">
+          <travuser>
+            <node name="Program" />
+            <node name="Funcall" />
+            <node name="VarLet" />
+            <node name="Var" />
+            <node name="Num" />
+            <node name="Float" />
+            <node name="Bool" />
+            <node name="VarDec" />
+          </travuser>
+        </traversal>
+
         <traversal id="COP" name="Count operators" default="sons" include="count_operators.h">
           <travuser>
             <node name="BinOp" />

@@ -46,6 +46,11 @@ SUBPHASE( link,
           ALWAYS,
           pet)
 
+SUBPHASE( ct, 
+          "Check Types",
+          CTchecktypes, 
+          ALWAYS,
+          pet) 
           
 SUBPHASE( cop, 
           "Count operators",
