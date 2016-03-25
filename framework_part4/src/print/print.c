@@ -58,11 +58,11 @@ static info *FreeInfo( info *info)
 
 /** <!--******************************************************************-->
  *
- * @fn PRTprogram
+ * @fn PRTsymbol
  *
  * @brief Prints the node and its sons/attributes
  *
- * @param arg_node BinOp node to process
+ * @param arg_node symbol node to process
  * @param arg_info pointer to info structure
  *
  * @return processed node
@@ -98,6 +98,18 @@ PRTsymbol (node * arg_node, info * arg_info)
   DBUG_RETURN (arg_node);
 }
 
+/** <!--******************************************************************-->
+ *
+ * @fn PRTfsymbol
+ *
+ * @brief Prints the node and its sons/attributes
+ *
+ * @param arg_node fsymbol node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
 node *
 PRTfsymbol (node * arg_node, info * arg_info)
 {
@@ -111,6 +123,18 @@ PRTfsymbol (node * arg_node, info * arg_info)
   DBUG_RETURN (arg_node);
 }
 
+/** <!--******************************************************************-->
+ *
+ * @fn PRTprogram
+ *
+ * @brief Prints the node and its sons/attributes
+ *
+ * @param arg_node program node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
 node *
 PRTprogram (node * arg_node, info * arg_info)
 {
@@ -129,6 +153,7 @@ PRTprogram (node * arg_node, info * arg_info)
   printf("\n");
   DBUG_RETURN(arg_node);
 }
+
 /** <!--******************************************************************-->
  *
  * @fn PRTfundef
@@ -374,11 +399,11 @@ PRTglobaldef (node * arg_node, info * arg_info)
 }
 /** <!--******************************************************************-->
  *
- * @fn PRTparam
+ * @fn PRTglobaldec
  *
  * @brief Prints the node and its sons/attributes
  *
- * @param arg_node param node to process
+ * @param arg_node globaldec node to process
  * @param arg_info pointer to info structure
  *
  * @return processed node
@@ -757,6 +782,32 @@ PRTreturn (node * arg_node, info * arg_info)
 
 /** <!--******************************************************************-->
  *
+ * @fn PRTconditionexpr
+ *
+ * @brief Prints the node and its sons/attributes
+ *
+ * @param arg_node conditionexpr node to process
+ * @param arg_info pointer to info structure
+ *
+ * @return processed node
+ *
+ ***************************************************************************/
+node *
+PRTconditionexpr (node * arg_node, info * arg_info)
+{
+  DBUG_ENTER ("PRTconditionexpr");
+
+  CONDITIONEXPR_IF(arg_node) = TRAVdo(CONDITIONEXPR_IF(arg_node), arg_info);
+  printf("?");
+  CONDITIONEXPR_THEN(arg_node) = TRAVdo(CONDITIONEXPR_THEN(arg_node), arg_info);
+  printf(":");
+  CONDITIONEXPR_ELSE(arg_node) = TRAVdo(CONDITIONEXPR_ELSE(arg_node), arg_info);
+
+  DBUG_RETURN (arg_node);
+}
+
+/** <!--******************************************************************-->
+ *
  * @fn PRTmonop
  *
  * @brief Prints the node and its sons/attributes
@@ -974,11 +1025,11 @@ PRTfloat (node * arg_node, info * arg_info)
 
 /** <!--******************************************************************-->
  *
- * @fn PRTint
+ * @fn PRTnum
  *
  * @brief Prints the node and its sons/attributes
  *
- * @param arg_node int node to process
+ * @param arg_node num node to process
  * @param arg_info pointer to info structure
  *
  * @return processed node
@@ -998,11 +1049,11 @@ PRTnum (node * arg_node, info * arg_info)
 
 /** <!--******************************************************************-->
  *
- * @fn PRTboolean
+ * @fn PRTbool
  *
  * @brief Prints the node and its sons/attributes
  *
- * @param arg_node Boolean node to process
+ * @param arg_node Bool node to process
  * @param arg_info pointer to info structure
  *
  * @return processed node
@@ -1158,6 +1209,4 @@ node
   DBUG_RETURN( syntaxtree);
 }
 
-/**
- * @}
- */
+

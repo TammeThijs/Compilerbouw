@@ -36,6 +36,7 @@ extern node *PRTwhile (node * arg_node, info * arg_info);
 extern node *PRTdowhile (node * arg_node, info * arg_info);
 extern node *PRTfor (node * arg_node, info * arg_info);
 extern node *PRTreturn (node * arg_node, info * arg_info);
+extern node *PRTconditionexpr(node *arg_node, info *arg_info);
 extern node *PRTassign (node * arg_node, info * arg_info);
 extern node *PRTvar (node * arg_node, info * arg_info);
 extern node *PRTvarlet (node * arg_node, info * arg_info);
