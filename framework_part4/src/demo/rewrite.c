@@ -33,15 +33,42 @@ static info *FreeInfo( info *info)
   DBUG_RETURN( info);
 }
 
+//rewrite and and or to a conditionexpression and return the conditionexpression
 node *RWbinop(node *arg_node, info *arg_info){
 	DBUG_ENTER("RWbinop");
+  printf("in de binop node\n");
+  node *leftexpr = BINOP_LEFT(arg_node);
+  node *rightexpr = BINOP_RIGHT(arg_node);
+  //rewrite and
+  if(BINOP_OP(arg_node)==BO_and){
+  
+    node *pred = TBmakeMonop(MO_not, leftexpr);
+    node *then = TBmakeBool(0);
+    node *otherthen = TBmakeBool(1);
+    node *otherother = TBmakeBool(0);
+    node *other = TBmakeConditionexpr(rightexpr, otherthen, otherother);
+    arg_node = TBmakeConditionexpr(pred, then, other);
+  }
+
+  //rewrite or
+  else if(BINOP_OP(arg_node) == BO_or){
+    node *orthen = TBmakeBool(1);
+    node *orotherthen = TBmakeBool(1);
+    node *orotherother = TBmakeBool(0);
+    node *orother = TBmakeConditionexpr(rightexpr, orotherthen, orotherother);
+    arg_node = TBmakeConditionexpr(leftexpr, orthen, orother);
+  }
+
 	DBUG_RETURN(arg_node);
 }
 
+//rewrite cast
 node *RWcast(node *arg_node, info *arg_info){
 	DBUG_ENTER("RWcast");
 	DBUG_RETURN(arg_node);
 }
+
+//begin traversal
 node *RWrewritecode( node *syntaxtree)
 {
 
