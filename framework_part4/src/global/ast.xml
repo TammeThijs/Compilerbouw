@@ -95,6 +95,13 @@
           </travuser>
         </traversal>
 
+        <traversal id="RW" name="Rewrite Code" default="sons" include="rewrite.h">
+          <travuser>
+            <node name="BinOp" />
+            <node name="Cast" />
+          </travuser>
+        </traversal>
+        
         <traversal id="COP" name="Count operators" default="sons" include="count_operators.h">
           <travuser>
             <node name="BinOp" />
@@ -126,6 +133,7 @@
       <node name="Float" />
       <node name="Bool" />
       <node name="Arrexpr"/>
+      <node name="ConditionExpr"/>
     </target>
   </nodeset>
   <nodeset name="Stmt">
@@ -192,6 +200,7 @@
     </attributes>
   </node>
 
+<!--node symbol: represents the needed parts of a param, vardec or globaldec-->
   <node name="Symbol">
     <sons>
       <son name="Next">
@@ -245,6 +254,7 @@
     </attributes>
   </node>
 
+<!--represents a link node for a function-->
 <node name="FSymbol">
     <sons>
       <son name="Next">
@@ -935,6 +945,45 @@
   <attributes />
 </node>
 
+
+<!-- node conditionexpression-->
+<node name="ConditionExpr">
+  <sons>
+    <son name="If">
+      <targets>
+        <target mandatory="yes">
+          <set name="Expr" />
+          <phases>
+            <all />
+          </phases>
+        </target>
+      </targets>
+    </son>
+    <son name="Then">
+      <targets>
+        <target mandatory="yes">
+          <set name="Expr" />
+          <phases>
+            <all />
+          </phases>
+        </target>
+      </targets>
+    </son>
+    <son name="Else">
+      <targets>
+        <target mandatory="yes">
+          <set name="Expr" />
+          <phases>
+            <all />
+          </phases>
+        </target>
+      </targets>
+    </son>
+  </sons>
+  <attributes />
+</node>
+
+<!--node exprstmt-->
 <node name="Exprstmt">
   <sons>
     <son name="Expr">
