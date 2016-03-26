@@ -72,7 +72,7 @@ static info *FreeInfo( info *info)
     INFO_INIT_VARDEC(arg_info) = vardec;  
   }
 
-  DBUG_RETURN(NULL);
+  DBUG_RETURN(arg_node);
  }
 
  node *INITglobaldef (node *arg_node, info *arg_info){
@@ -94,7 +94,6 @@ static info *FreeInfo( info *info)
 
   node *varlet = TBmakeVarlet(GLOBALDEF_NAME(arg_node), NULL);
   node *returnnode = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
-
 
   DBUG_RETURN(returnnode);
  }

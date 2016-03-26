@@ -7,5 +7,4 @@ extern node *INITglobaldec (node *arg_node, info *arg_info);
 extern node *INITfunbody (node *arg_node, info *arg_info);
 extern node *INITdoInitToReg( node *syntaxtree);
 
-
 #endif
