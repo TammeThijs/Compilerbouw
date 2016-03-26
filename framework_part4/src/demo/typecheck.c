@@ -143,8 +143,18 @@ node *CTvar(node *arg_node, info *arg_info){
 //geef het type van de cast mee aan de info_type
 node *CTcast(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTcast");
-
+	CAST_EXPRESSION(arg_node) = TRAVdo(CAST_EXPRESSION(arg_node), arg_info);
+	type exprType = INFO_TYPE(arg_info);
+	type castType = CAST_TYPE(arg_node);
 	INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
+	if(exprType == T_boolean && castType == T_int){
+		node *expr = CAST_EXPRESSION(arg_node);
+		node *then = TBmakeNum(1);
+		node *other = TBmakeNum(0);
+		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		arg_node = condexpr;
+	}
+	
 
 	DBUG_RETURN(arg_node);
 }
