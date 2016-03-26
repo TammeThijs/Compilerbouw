@@ -337,11 +337,10 @@ node *
 PRTfunbody (node * arg_node, info * arg_info)
 {
   DBUG_ENTER("PRTfunbody");
-  printf("%*s", (INFO_COUNT(arg_info)-1)*4, " ");
-
   FUNBODY_VARDEC( arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
-  FUNBODY_LOCALFUNDEFS( arg_node) = TRAVopt( FUNBODY_LOCALFUNDEFS( arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node) = TRAVopt( FUNBODY_STATEMENT( arg_node), arg_info);
+  FUNBODY_LOCALFUNDEFS( arg_node) = TRAVopt( FUNBODY_LOCALFUNDEFS( arg_node), arg_info);
+
   DBUG_RETURN(arg_node);
 }
 
@@ -767,6 +766,9 @@ PRTreturn (node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTreturn");
 
+  printf("\n\n");
+
+
   printf("%*s", INFO_COUNT(arg_info)*4, " ");
   printf("return");
 
@@ -859,8 +861,7 @@ PRTexprs (node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTexprs");
 
-  EXPRS_EXPRS( arg_node) = TRAVdo( EXPRS_EXPRS( arg_node), arg_info);
-  
+  EXPRS_EXPRS( arg_node) = TRAVdo( EXPRS_EXPRS( arg_node), arg_info);  
   EXPRS_NEXT( arg_node) = TRAVopt( EXPRS_NEXT( arg_node), arg_info);
 
   DBUG_RETURN (arg_node);
@@ -883,8 +884,7 @@ PRTstmts (node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTstmts");
 
-  STMTS_STMT( arg_node) = TRAVdo( STMTS_STMT( arg_node), arg_info);
-  
+  STMTS_STMT( arg_node) = TRAVdo( STMTS_STMT( arg_node), arg_info);  
   STMTS_NEXT( arg_node) = TRAVopt( STMTS_NEXT( arg_node), arg_info);
   
   DBUG_RETURN (arg_node);
@@ -909,14 +909,18 @@ PRTassign (node * arg_node, info * arg_info)
 {  
   DBUG_ENTER ("PRTassign");
 
+  printf("\n");
+  printf("%*s", INFO_COUNT(arg_info)*4, " ");
+
+
   ASSIGN_LET( arg_node) = TRAVdo( ASSIGN_LET( arg_node), arg_info);
-  printf( "= ");
+  printf( " = ");
   
   if (ASSIGN_EXPR( arg_node) != NULL) {
   ASSIGN_EXPR( arg_node) = TRAVdo( ASSIGN_EXPR( arg_node), arg_info);
   }
   
-  printf(";\n");
+  printf(";");
   
   DBUG_RETURN (arg_node);
 }
@@ -1041,7 +1045,7 @@ PRTnum (node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTint");
 
-  printf( "%i", NUM_VALUE( arg_node));
+  printf("%i", NUM_VALUE( arg_node));
 
   DBUG_RETURN (arg_node);
 }

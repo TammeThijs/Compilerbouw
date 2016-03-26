@@ -62,7 +62,9 @@
           <travuser>
             <node name="GlobalDec" />
             <node name="GlobalDef"/>
-            <node name="FunFunbody"/>
+            <node name="FunBody"/>
+            <node name="VarDec" />
+            <node name="Stmts" />
           </travuser>
         </traversal>
 

@@ -125,7 +125,7 @@ node *LINKvar(node *arg_node, info *arg_info){
       char *varName = VAR_NAME(arg_node);
       if(STRsuffix(varName, symbolName)){
         VAR_DECL(arg_node) = symbol;
-        printf("%s Gevonden!\n", varName);
+      //  printf("%s Gevonden!\n", varName);
         found = true;
       }
       else{
@@ -160,7 +160,7 @@ node *LINKvarlet(node *arg_node, info *arg_info){
       char *varletName = VARLET_NAME(arg_node);
       if(STRsuffix(varletName, symbolName)){
         VARLET_DECL(arg_node) = symbol;
-        printf("%s is Gevonden!\n", varletName);
+        // printf("%s is Gevonden!\n", varletName);
         found = true;
       }
       else{
@@ -241,7 +241,6 @@ node *LINKcreatelinks( node *syntaxtree)
   info *arg_info;
 
   DBUG_ENTER("LINKcreatelinks");
-  printf("links maken\n");
 
   arg_info = MakeInfo();
 
