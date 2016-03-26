@@ -865,7 +865,7 @@ PRTassign (node * arg_node, info * arg_info)
   ASSIGN_EXPR( arg_node) = TRAVdo( ASSIGN_EXPR( arg_node), arg_info);
   }
   
-  printf(";");
+  printf(";\n");
   
   DBUG_RETURN (arg_node);
 }

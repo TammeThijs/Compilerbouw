@@ -1,6 +1,6 @@
-extern bool istrue;
-
-
+int k = 9;
+int z = -10;
+float yy = 99.1;
 
 int main(){
 
@@ -8,9 +8,7 @@ int main(){
 
 
 	int foo(int b, int c){
-		float c = 1.1;
-		bool flag = false;
-
+		return c+b;
 	}
 
 	int bar(){
@@ -18,7 +16,6 @@ int main(){
 	}
 
 	for(int k = 0, 10){
-
 		abc = 2;		
 	}
 
