@@ -154,7 +154,27 @@ node *CTcast(node *arg_node, info *arg_info){
 		node *condexpr = TBmakeConditionexpr(expr, then, other);
 		arg_node = condexpr;
 	}
-	
+	else if(exprType == T_boolean && castType == T_float){
+		node *expr = CAST_EXPRESSION(arg_node);
+		node *then = TBmakeFloat(1.0);
+		node *other = TBmakeFloat(0.0);
+		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		arg_node = condexpr;
+	}
+	else if(exprType == T_int && castType == T_boolean){
+		node *expr = TBmakeBinop(BO_gt, CAST_EXPRESSION(arg_node), TBmakeNum(0));
+		node *then = TBmakeBool(true);
+		node *other = TBmakeBool(false);
+		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		arg_node = condexpr;
+	}
+	else if(exprType == T_float && castType == T_boolean){
+		node *expr = TBmakeBinop(BO_gt, CAST_EXPRESSION(arg_node), TBmakeFloat(0.0));
+		node *then = TBmakeBool(true);
+		node *other = TBmakeBool(false);
+		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		arg_node = condexpr;
+	}
 
 	DBUG_RETURN(arg_node);
 }
