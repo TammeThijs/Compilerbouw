@@ -191,6 +191,11 @@ if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX
             $$ = TBmakeIf($3, $5, NULL);
         }
         |
+        IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts %prec IFX CURLY_BRACKET_R
+        {
+            $$ = TBmakeIf($3, $6, NULL);
+        }
+        |
         IF BRACKET_L expr BRACKET_R stmt ELSE stmt
         {
             $$ = TBmakeIf($3, $5, $7);

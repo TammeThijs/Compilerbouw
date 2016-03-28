@@ -145,7 +145,7 @@ PRTprogram (node * arg_node, info * arg_info)
       printf("\n");
   }
   else{
-    printf("SYMBOL TABLE IS NULL\n");
+    printf("[PROGRAM] SYMBOL TABLE IS NULL\n");
   }
 
   PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
