@@ -24,13 +24,18 @@
 
  struct INFO {
   node *rootNode;
-  node *stmtStack [20];  
+  node *funBody;
+  node *stmtStack [20];
+  int firstTime;
   int count;
 };
 
 #define INFO_ROOTNODE(n) ((n)->rootNode)
+#define INFO_FUNBODY(n) ((n)->funBody)
 #define INFO_QUEUE(n) ((n)->stmtStack)
 #define INFO_COUNTER(n) ((n)->count)
+#define INFO_FIRSTTIME(n) ((n)->firstTime)
+
 
 info *enqueue(info * arg_info, node *stmt){
   INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
@@ -53,7 +58,9 @@ static info *MakeInfo(void)
   result = (info *)MEMmalloc(sizeof(info));
 
   INFO_ROOTNODE( result) = NULL;
+  INFO_FUNBODY( result) = NULL;
   INFO_COUNTER( result) = 0;
+  INFO_FIRSTTIME( result) = 0;
 
 
   DBUG_RETURN( result);
@@ -81,36 +88,34 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   node *declarations;
   node *assign;
 
-  int counter = 0;
+  if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
-
-  if(DECLARATIONS_DECL(arg_node) != NULL && INFO_ROOTNODE(arg_info) == NULL &&
-   NODE_TYPE(DECLARATIONS_DECL(arg_node)) == 7){
     initbody = TBmakeFunbody(NULL, NULL, NULL);
-    fundef = TBmakeFundef(T_unknown, "__init", NULL, initbody, NULL, NULL);
-    declarations = TBmakeDeclarations(fundef, NULL);
-    INFO_ROOTNODE(arg_info) = initbody;
+    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), NULL, initbody, NULL, NULL);
+    declarations = TBmakeDeclarations(fundef, arg_node);
+
+    INFO_FUNBODY(arg_info) = initbody;
+    INFO_FIRSTTIME(arg_info) = 1;
+
+    arg_node = declarations;
   }
 
-  // node *tmp = arg_node;
-  // while(DECLARATIONS_NEXT(tmp) != NULL){
-  //   tmp = DECLARATIONS_NEXT(tmp);
-  //   counter++;
-  // }
+  if(INFO_COUNTER(arg_info) > 0 && DECLARATIONS_NEXT(arg_node) == NULL){
 
+    node *ret = TBmakeReturn(NULL);
+    node *lastStmt = TBmakeStmts(ret, NULL);
+    FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = lastStmt;
+
+    while(INFO_COUNTER(arg_info) >0){
+          assign = dequeue(arg_info);  
+          stmts = TBmakeStmts(assign, lastStmt);
+          FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = stmts;
+          lastStmt = stmts;
+    }
+  } 
+  
   DECLARATIONS_DECL( arg_node) = TRAVopt( DECLARATIONS_DECL( arg_node), arg_info);
   DECLARATIONS_NEXT( arg_node) = TRAVopt( DECLARATIONS_NEXT( arg_node), arg_info);
-
-  if(INFO_COUNTER(arg_info) > 0){
-  assign = dequeue(arg_info);  
-  stmts = TBmakeStmts(assign, NULL);
-  printf("type %d\n", NODE_TYPE(assign));
-  // FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
-  }
-
-
-  
-  
 
   DBUG_RETURN(arg_node);
  }
@@ -120,7 +125,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   DBUG_ENTER("INITglobaldef");
 
   if(GLOBALDEF_INIT(arg_node) != NULL){
-      node *varlet = TBmakeVarlet(GLOBALDEF_NAME(arg_node), NULL);
+      node *varlet = TBmakeVarlet(STRcpy(GLOBALDEF_NAME(arg_node)), NULL);
       node *assign = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
       arg_info = enqueue(arg_info, assign);
   }

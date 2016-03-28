@@ -178,10 +178,6 @@ PRTfundef (node * arg_node, info * arg_info)
       FUNDEF_SYMBOLTABLE(arg_node) = TRAVopt(FUNDEF_SYMBOLTABLE(arg_node), arg_info);
       printf("\n");
   }
-  else{
-    printf("SYMBOL TABLE IS NULL\n");
-  }
-
 
   switch(FUNDEF_TYPE( arg_node)){
     case T_int:

@@ -3,11 +3,14 @@ int a = 23;
 float z = 2.333;
 bool test = true;
 
-int foo(){
+void foo(){
 
-	int k = 5;
+	int bar(int a){
 
-	return 1;
+		int k = 3;
+
+		return 2*a;
+	}
+
+	return;
 }
-
-
