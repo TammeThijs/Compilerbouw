@@ -91,7 +91,7 @@ PRTsymbol (node * arg_node, info * arg_info)
       DBUG_ASSERT( 0, "unknown type detected!");
   }
 
-  printf("|   %-8s|   %-10s|   %d   |\n", tmp, SYMBOL_NAME(arg_node), SYMBOL_STATE(arg_node));
+  printf("|   %-8s|   %-20s|   %d   |\n", tmp, SYMBOL_NAME(arg_node), SYMBOL_STATE(arg_node));
 
   SYMBOL_NEXT(arg_node) = TRAVopt(SYMBOL_NEXT(arg_node), arg_info);
 

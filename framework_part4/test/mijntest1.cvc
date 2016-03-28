@@ -5,7 +5,6 @@ bool test = true;
 void foo(){
 
 	int bar(int a){
-
 		int k = 3;
 
 		return 2*a;

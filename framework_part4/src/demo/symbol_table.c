@@ -31,6 +31,8 @@
 #define INFO_ROOT_NODE(n) ((n)->root_node)
 #define INFO_STATE(n) ((n)->state)
 
+#define RENAME_STR_SIZE 20
+
 
 static info *MakeInfo(void)
 {
@@ -86,8 +88,9 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
   DBUG_ENTER("SYMglobaldec");
 
   char *name;
-  char buffer[10];
-  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+  char buffer[RENAME_STR_SIZE];
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
+
 
   name = GLOBALDEC_NAME( arg_node);
   GLOBALDEC_NAME( arg_node) = STRcat(buffer , name);
@@ -114,8 +117,8 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
   DBUG_ENTER("SYMglobaldef");
 
   char *name;
-  char buffer[10];
-  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+  char buffer[RENAME_STR_SIZE];
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
   name = GLOBALDEF_NAME( arg_node);
   GLOBALDEF_NAME( arg_node) = STRcat(buffer , name);
@@ -138,7 +141,8 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 //put function definition in the right fsymboltable
 node *SYMfundef( node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("SYMfundef");
+  
+DBUG_ENTER("SYMfundef");
 node * fsymbol = TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
 
 //check which type root node is, and make new fsymbol table if there is none
@@ -188,8 +192,8 @@ node *SYMparam( node *arg_node, info * arg_info)
 
   //rename
   char *name;
-  char buffer[10];
-  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+  char buffer[RENAME_STR_SIZE];
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
   name = PARAM_NAME( arg_node);
   PARAM_NAME( arg_node) = STRcat(buffer , name);
@@ -243,8 +247,8 @@ node *SYMvardec( node *arg_node, info * arg_info)
 
 //rename
   char *name;
-  char buffer[10];
-  snprintf(buffer, 10, "%d_", INFO_STATE(arg_info));
+  char buffer[RENAME_STR_SIZE];
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
   name = VARDEC_NAME( arg_node);
   VARDEC_NAME( arg_node) = STRcat(buffer , name);
