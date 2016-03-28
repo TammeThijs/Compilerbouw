@@ -135,6 +135,7 @@ node *LINKvar(node *arg_node, info *arg_info){
       char *varName = VAR_NAME(arg_node);
       if(STRsuffix(varName, symbolName)){
         VAR_DECL(arg_node) = symbol;
+        VAR_NAME(arg_node) = SYMBOL_NAME(symbol);
         found = true;
         SYMBOL_STATE(symbol) = -1;
       }

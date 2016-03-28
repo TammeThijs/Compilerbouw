@@ -89,13 +89,13 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
 
   char *name;
   char buffer[RENAME_STR_SIZE];
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
+  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), STRcpy(GLOBALDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-  name = GLOBALDEC_NAME( arg_node);
-  GLOBALDEC_NAME( arg_node) = STRcat(buffer , name);
-
-  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), GLOBALDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
+  name = STRcpy(SYMBOL_NAME( symbol));
+  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  GLOBALDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //if there is no program symboltable then make one.
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
@@ -118,12 +118,13 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 
   char *name;
   char buffer[RENAME_STR_SIZE];
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
-  name = GLOBALDEF_NAME( arg_node);
-  GLOBALDEF_NAME( arg_node) = STRcat(buffer , name);
+  node *symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-  node *symbol = TBmakeSymbol(GLOBALDEF_TYPE (arg_node), GLOBALDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
+  name = STRcpy(SYMBOL_NAME( symbol));
+  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  GLOBALDEF_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //make a symbol table if there is none.
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
@@ -190,16 +191,15 @@ node *SYMparam( node *arg_node, info * arg_info)
   DBUG_ENTER("SYMparam");
 
 
-  //rename
   char *name;
   char buffer[RENAME_STR_SIZE];
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
-  name = PARAM_NAME( arg_node);
-  PARAM_NAME( arg_node) = STRcat(buffer , name);
+  node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), STRcpy(PARAM_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-
-  node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), PARAM_NAME( arg_node), INFO_STATE(arg_info), NULL);
+  name = STRcpy(SYMBOL_NAME( symbol));
+  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  PARAM_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //check type of root node of the moment, make a new symbol table if there is none
   if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
@@ -245,15 +245,16 @@ node *SYMvardec( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMvardec");
 
-//rename
   char *name;
   char buffer[RENAME_STR_SIZE];
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&arg_node);
 
-  name = VARDEC_NAME( arg_node);
-  VARDEC_NAME( arg_node) = STRcat(buffer , name);
+  node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), STRcpy(VARDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-  node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
+  name = STRcpy(SYMBOL_NAME( symbol));
+  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  VARDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
+
 
   //put symbol in right symbol table, check root node type first. 
    if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
