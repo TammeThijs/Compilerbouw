@@ -4,9 +4,9 @@
  *
  * Prefix: SYM
  *
- * Description:
+ * Description: Makes the symbol tables and renames variables
  *
- * TODO
+ * @author Carly Hill & Tamme Thijs
  *
  *****************************************************************************/
 
@@ -70,6 +70,7 @@ node *SYMprogram( node *arg_node, info *arg_info)
   DBUG_RETURN( arg_node);
 }
 
+//traverse over declarations
 node *SYMdeclarations( node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMdeclarations");
@@ -79,7 +80,7 @@ node *SYMdeclarations( node *arg_node, info *arg_info)
   DBUG_RETURN(arg_node);
 }
 
-
+//rename globaldec and put in program symbol table
 node *SYMglobaldec( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMglobaldec");
@@ -93,6 +94,7 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
 
   node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), GLOBALDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
 
+  //if there is no program symboltable then make one.
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
@@ -106,7 +108,7 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
   DBUG_RETURN(arg_node);
 }
 
-
+//change name globaldef and put into symbol table program
 node *SYMglobaldef(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMglobaldef");
@@ -120,6 +122,7 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 
   node *symbol = TBmakeSymbol(GLOBALDEF_TYPE (arg_node), GLOBALDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
 
+  //make a symbol table if there is none.
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
@@ -132,10 +135,13 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
   DBUG_RETURN(arg_node);
 }
 
+//put function definition in the right fsymboltable
 node *SYMfundef( node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMfundef");
 node * fsymbol = TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
+
+//check which type root node is, and make new fsymbol table if there is none
 if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
       if(PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
@@ -167,12 +173,14 @@ if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
     FUNDEF_PARAMS( arg_node) = TRAVopt( FUNDEF_PARAMS( arg_node), arg_info);
     FUNDEF_FUNBODY( arg_node) = TRAVopt( FUNDEF_FUNBODY( arg_node), arg_info);
 
+    //set root node back
     INFO_ROOT_NODE(arg_info) = tmp;
     INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
   }
   DBUG_RETURN(arg_node);
 }
 
+//rename param and put in right symbol table
 node *SYMparam( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMparam");
@@ -189,6 +197,7 @@ node *SYMparam( node *arg_node, info * arg_info)
 
   node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), PARAM_NAME( arg_node), INFO_STATE(arg_info), NULL);
 
+  //check type of root node of the moment, make a new symbol table if there is none
   if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
       if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
@@ -208,12 +217,14 @@ node *SYMparam( node *arg_node, info * arg_info)
 
   } 
 
+  //keep traversing
   PARAM_NEXT( arg_node) = TRAVopt( PARAM_NEXT( arg_node), arg_info);
 
   MEMfree(name);  
   DBUG_RETURN(arg_node);
 }
 
+//traverse through funbody
 node *SYMfunbody( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMfunbody");
@@ -225,9 +236,10 @@ node *SYMfunbody( node *arg_node, info * arg_info)
   DBUG_RETURN(arg_node);
 }
 
+//rename and put in the right symbol table
 node *SYMvardec( node *arg_node, info * arg_info)
 {
-  DBUG_ENTER("SYMglobaldec");
+  DBUG_ENTER("SYMvardec");
 
 //rename
   char *name;
@@ -238,6 +250,8 @@ node *SYMvardec( node *arg_node, info * arg_info)
   VARDEC_NAME( arg_node) = STRcat(buffer , name);
 
   node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), VARDEC_NAME( arg_node), INFO_STATE(arg_info), NULL);
+
+  //put symbol in right symbol table, check root node type first. 
    if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
@@ -257,13 +271,14 @@ node *SYMvardec( node *arg_node, info * arg_info)
     }
   }
 
-
+  //keep traversing
   VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
 
   MEMfree(name); 
   DBUG_RETURN(arg_node);
 }
 
+//traverse over fundefs
 node *SYMfundefs( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMfundefs");  
@@ -274,6 +289,7 @@ node *SYMfundefs( node *arg_node, info * arg_info)
   DBUG_RETURN(arg_node);
 }
 
+//traverse over stmts
 node *SYMstmts( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMstmts");  
@@ -284,6 +300,7 @@ node *SYMstmts( node *arg_node, info * arg_info)
 
 }
 
+//put loopvar in symbol table. 
 node *SYMfor( node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMfor");  

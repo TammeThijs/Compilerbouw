@@ -8,7 +8,7 @@
  * Description: makes links between variables and corresponding symbols and 
  * function calls with the corresponding functions
  * 
- *
+ *  @author Carly Hill 10523162
  *****************************************************************************/
 
 
@@ -80,6 +80,8 @@ static info *FreeInfo( info *info)
 
   DBUG_RETURN( info);
 }
+
+//push symbol table on stack and add fsymboltable to list
 node *LINKprogram( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKprogram");
   if(PROGRAM_SYMBOLTABLE(arg_node)!=NULL){
@@ -92,26 +94,34 @@ node *LINKprogram( node *arg_node, info *arg_info){
   DBUG_RETURN(arg_node);
 }
 
+//push symboltable on stack, add fsymboltable to list and traverser
 node *LINKfundef( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKfundef");
+
   if(FUNDEF_SYMBOLTABLE(arg_node)!=NULL){
     arg_info = push(arg_info, FUNDEF_SYMBOLTABLE(arg_node));
   }
   if(FUNDEF_FSYMBOLTABLE(arg_node)!=NULL){
     arg_info = add(arg_info, FUNDEF_FSYMBOLTABLE(arg_node));
   }
+
   INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
   FUNDEF_FUNBODY(arg_node) =TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
   INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
   arg_info = pop(arg_info);
+
   DBUG_RETURN(arg_node);
 }
+
+//search var in symbol tables and fill link or give error
 node *LINKvar(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvar");
+
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
   
+  //while not found and still a symbol table to be searched
   while(!found && scope > 0){
     while(symbol == NULL && scope>0){
       scope--;
@@ -125,7 +135,6 @@ node *LINKvar(node *arg_node, info *arg_info){
       char *varName = VAR_NAME(arg_node);
       if(STRsuffix(varName, symbolName)){
         VAR_DECL(arg_node) = symbol;
-      //  printf("%s Gevonden!\n", varName);
         found = true;
       }
       else{
@@ -134,19 +143,23 @@ node *LINKvar(node *arg_node, info *arg_info){
     }
   }
   
-
+  //if the symbol is not found: give an error
   if(!found){
-    CTIerrorLine(NODE_LINE(arg_node), "Variabele is niet gedeclareerd");
+    CTIerrorLine(NODE_LINE(arg_node), "Var has not been declared");
   }
+
   DBUG_RETURN(arg_node);
 }
 
+//search varlet in symbol tables and fill link (decl)
 node *LINKvarlet(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvarlet");
+
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
   
+  //search through stack
   while(!found && scope > 0){
     while(symbol == NULL && scope>0){
       scope--;
@@ -160,7 +173,6 @@ node *LINKvarlet(node *arg_node, info *arg_info){
       char *varletName = VARLET_NAME(arg_node);
       if(STRsuffix(varletName, symbolName)){
         VARLET_DECL(arg_node) = symbol;
-        // printf("%s is Gevonden!\n", varletName);
         found = true;
       }
       else{
@@ -169,15 +181,18 @@ node *LINKvarlet(node *arg_node, info *arg_info){
     }
   }
   
-
+  //giver error if not found
   if(!found){
-    CTIerrorLine(NODE_LINE(arg_node), "Variabele is niet gedeclareerd!");
+    CTIerrorLine(NODE_LINE(arg_node), "Varlet has not been declared");
   }
+
   DBUG_RETURN(arg_node);
 }
 
+//search funcall in the list and fill decl
 node *LINKfuncall(node *arg_node, info *arg_info){
   DBUG_ENTER("Linkfuncall");
+
   int i = INFO_COUNTER(arg_info);
   node *fsymbol = INFO_LIST(arg_info)[i];
   bool found = false;
@@ -195,7 +210,6 @@ node *LINKfuncall(node *arg_node, info *arg_info){
       char *funName = FUNCALL_NAME(arg_node);
       if(STReq(funName, symbolName)){
         FUNCALL_DECL(arg_node) = fsymbol;
-        printf("%s Gevonden!\n", funName);
         found = true;
       }
       else{
@@ -204,10 +218,11 @@ node *LINKfuncall(node *arg_node, info *arg_info){
     }
   }
   
-
+  //give error if not found
   if(!found){
-    CTIerrorLine(NODE_LINE(arg_node), "Functie is niet gedeclareerd");
+    CTIerrorLine(NODE_LINE(arg_node), "function has not been declared");
   }
+  //check if the amount of parameters matches the amount of given arguments
   else{
     int paramcount = 0;
     int argumentcount = 0;
@@ -228,13 +243,14 @@ node *LINKfuncall(node *arg_node, info *arg_info){
       }
     }
     if(paramcount != argumentcount){
-      CTIerrorLine(NODE_LINE(arg_node), "Onjuiste aantal argumenten...");
+      CTIerrorLine(NODE_LINE(arg_node), "Number of given arguments does not match the number of parameters.");
     }
   }
   FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
   DBUG_RETURN(arg_node);
 }
 
+//start function
 node *LINKcreatelinks( node *syntaxtree)
 {
 
