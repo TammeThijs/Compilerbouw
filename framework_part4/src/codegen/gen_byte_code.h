@@ -9,6 +9,9 @@ extern node *GBCassign( node *arg_node, info *arg_info);
 extern node *GBCvardec( node *arg_node, info *arg_info);
 extern node *GBCvar( node *arg_node, info *arg_info);
 extern node *GBCvarlet( node *arg_node, info *arg_info);
+extern node *GBCreturn( node *arg_node, info *arg_info);
+extern node *GBCfloat( node *arg_node, info *arg_info);
+extern node *GBCbool( node *arg_node, info *arg_info);
 extern node *GBCnum( node *arg_node, info *arg_info);
 
 #endif

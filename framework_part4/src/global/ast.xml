@@ -107,6 +107,9 @@
             <node name="Var"/>
             <node name="VarLet"/>
             <node name="Num"/>
+            <node name="Return"/>
+            <node name="Float"/>
+            <node name="Bool"/>
           </travuser>
         </traversal>
 
@@ -929,7 +932,20 @@
       </targets>
     </son>
   </sons>
-  <attributes />
+  <attributes>
+    <attribute name="Type">
+      <type name="Type">
+        <targets>
+          <target mandatory="no">
+            <any />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </type>
+    </attribute>
+  </attributes>
 </node>
 
 <!-- node exprs -->
