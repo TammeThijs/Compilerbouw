@@ -94,14 +94,19 @@ node *GBCvar( node *arg_node, info *arg_info){
 
 node *GBCvarlet( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvarlet");
-	/*if(SYMBOL_STATE(VARLET_DECL(arg_node)) == -1){
-		SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
-		INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
-	}*/
-	int place = SYMBOL_STATE(VARLET_DECL(arg_node));
+	int place = -1;
+	
+	if(VARLET_DECL(arg_node) != NULL){
+		if(SYMBOL_STATE(VARLET_DECL(arg_node)) == -1){
+			SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
+			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
+		}
+		place = SYMBOL_STATE(VARLET_DECL(arg_node));
+	}
+	
 	
 	char buffer[1];
-	sprintf(buffer, "%d", 0);
+	sprintf(buffer, "%d", place);
 	char *command = STRcatn(3, "istore ", buffer, "\n");
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
