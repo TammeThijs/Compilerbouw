@@ -60,11 +60,15 @@ static info *FreeInfo( info *info)
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
 	char *main_name = "main";
+
+	//check if it is main
 	if(STReq(FUNDEF_NAME(arg_node), main_name)){
 		fputs("main:\n", INFO_CODE(arg_info));
 		fputs("esr 2\n", INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 		fputs("\n", INFO_CODE(arg_info));
+
+		//write constants
 		for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
 			if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
 				char buffer[20];
@@ -83,11 +87,13 @@ node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//check vardec
 node *GBCvardec( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvardec");
 	DBUG_RETURN(arg_node);
 }
 
+//traverse over assign
 node *GBCassign( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCassign");
 	ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
@@ -95,10 +101,14 @@ node *GBCassign( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//write binop code
 node *GBCbinop( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCbinop");
+	//traverse first to put operands on stack
 	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+
+	//check which operand you have to write down
 	if(BINOP_OP(arg_node) == BO_add){
 		if(BINOP_OPTYPE(arg_node) == T_int){
 			fputs("iadd\n", INFO_CODE(arg_info));
@@ -137,6 +147,7 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//write code var
 node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvar");
 	int place = -1;
@@ -144,7 +155,6 @@ node *GBCvar( node *arg_node, info *arg_info){
 	printf("CHECKvar\n");
 	
 	if(VAR_DECL(arg_node) != NULL){
-		printf("CHECKvar NULL\n");
 		if(SYMBOL_STATE(VAR_DECL(arg_node)) == -1){
 			SYMBOL_STATE(VAR_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
@@ -175,6 +185,7 @@ node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//write code varlet
 node *GBCvarlet( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvarlet");
 	int place = -1;
@@ -197,12 +208,16 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
+
+//write code return
 node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCreturn");
-		//nog return type in typecheck fixen
+	//no time left to make this depend on type...
 	fputs("ireturn\n", INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
+
+//write load for constant
 node *GBCnum( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCnum");
 	if(NUM_VALUE(arg_node) == 0){
@@ -232,6 +247,7 @@ node *GBCnum( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//write assembly float constant
 node *GBCfloat( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGfloat");
 	if(FLOAT_VALUE(arg_node) == 0.0){
@@ -258,6 +274,7 @@ node *GBCfloat( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+//write assembly bool constant
 node *GBCbool( node *arg_node, info *arg_info){
 	DBUG_ENTER("DBGbool");
 	if(BOOL_VALUE(arg_node) == 0){
