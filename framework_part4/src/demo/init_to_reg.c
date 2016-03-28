@@ -86,7 +86,6 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   node *initbody;
   node *fundef;
   node *declarations;
-  node *assign;
 
   if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
@@ -100,6 +99,9 @@ node *INITdeclarations (node *arg_node, info *arg_info){
     arg_node = declarations;
   }
 
+  DECLARATIONS_DECL( arg_node) = TRAVopt( DECLARATIONS_DECL( arg_node), arg_info);
+  DECLARATIONS_NEXT( arg_node) = TRAVopt( DECLARATIONS_NEXT( arg_node), arg_info);
+
   if(INFO_COUNTER(arg_info) > 0 && DECLARATIONS_NEXT(arg_node) == NULL){
 
     node *ret = TBmakeReturn(NULL);
@@ -107,15 +109,13 @@ node *INITdeclarations (node *arg_node, info *arg_info){
     FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = lastStmt;
 
     while(INFO_COUNTER(arg_info) >0){
-          assign = dequeue(arg_info);  
+          node *assign = dequeue(arg_info);  
           stmts = TBmakeStmts(assign, lastStmt);
           FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = stmts;
           lastStmt = stmts;
     }
   } 
-  
-  DECLARATIONS_DECL( arg_node) = TRAVopt( DECLARATIONS_DECL( arg_node), arg_info);
-  DECLARATIONS_NEXT( arg_node) = TRAVopt( DECLARATIONS_NEXT( arg_node), arg_info);
+   
 
   DBUG_RETURN(arg_node);
  }

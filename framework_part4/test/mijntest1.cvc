@@ -1,4 +1,3 @@
-extern int k;
 int a = 23;
 float z = 2.333;
 bool test = true;
@@ -14,3 +13,6 @@ void foo(){
 
 	return;
 }
+
+int k = 55;
+int q = 3333;
