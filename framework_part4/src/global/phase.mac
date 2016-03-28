@@ -57,33 +57,13 @@ SUBPHASE( init,
           INITdoInitToReg,
           ALWAYS, 
           pet
-          )
-          
-SUBPHASE( rw, 
-          "Rewrite code",
-          RWrewritecode, 
-          ALWAYS,
-          pet)
-
-SUBPHASE( cop, 
-          "Count operators",
-          COPdoCountOperators, 
-          ALWAYS,
-          pet)   
+          ) 
    
 SUBPHASE( os, 
           "Optimise subtraction",
           OSdoOptSub, 
           ALWAYS,
           pet)   
-   
-SUBPHASE( cop2, 
-          "Count operators",
-          COPdoCountOperators, 
-          ALWAYS,
-          pet) 
-
-
    
 ENDPHASE( pet) 
 
@@ -92,8 +72,7 @@ ENDPHASE( pet)
 
 
 PHASE( cg,
-       "Generating Code",
-       ALWAYS)
+       "Generating Code", ALWAYS)
 
 SUBPHASE( prt, "Generating byte code", GBCdoGenByteCode, ALWAYS, cg)      
 SUBPHASE( prt_ast, "Print ast", PRTdoPrint, ALWAYS, cg)      

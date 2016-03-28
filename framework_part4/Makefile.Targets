@@ -79,5 +79,5 @@ print       = print.o
 
 codegen     = gen_byte_code.o
 
-demo        = count_operators.o opt_sub.o symbol_table.o link.o typecheck.o init_to_reg.o rewrite.o
+demo        = opt_sub.o symbol_table.o link.o typecheck.o init_to_reg.o
 
