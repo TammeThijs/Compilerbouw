@@ -97,8 +97,11 @@
           </travuser>
         </traversal>
 
-        <traversal id="CG" name="Generate code" default="sons" include="gen_byte_code.h">
+        <traversal id="GBC" name="Generate code" default="sons" include="gen_byte_code.h">
           <travuser>
+            <node name="FunDef"/>
+            <nodeset name="BinOp"/>
+            <nodeset name="Assign"/>
           </travuser>
         </traversal>
 
@@ -433,7 +436,7 @@
     <sons>
       <son name="Dims">
         <targets>
-          <target mandatory="yes">
+          <target mandatory="no">
             <node name="Exprs" />
             <phases>
               <all />
