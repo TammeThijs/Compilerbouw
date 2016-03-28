@@ -1,3 +1,8 @@
+/*
+	Typechecker traversal for checking types and rewriting binop and cast(milestone 7,9 and 10)
+	@author Carly Hill 10523162
+*/
+
 #include "link.h"
 
 #include "types.h"
@@ -35,29 +40,30 @@ static info *FreeInfo( info *info)
   DBUG_RETURN( info);
 }
 
-//traverse over de declaraties van het progamma
+//traverse over the declarations of the program
 node *CTprogram(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTprogram");
 	PROGRAM_DECLARATIONS(arg_node) =  TRAVdo(PROGRAM_DECLARATIONS( arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
-//check parametertypes van funcall en geef type van functie mee
+//check parametertypes of funcall and give type of function to info_type
 node *CTfuncall(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfuncall");
 
-	//check parameter types, als er parameters zijn
+	//check parameter types, if there are any
 	if(FUNCALL_ARGS(arg_node)!=NULL){
 		node *args = FUNCALL_ARGS(arg_node);
+		//check param type against expression type
 		node * param = FUNDEF_PARAMS(FSYMBOL_FUNCTION(FUNCALL_DECL(arg_node)));
 		EXPRS_EXPRS(args) = TRAVdo(EXPRS_EXPRS(args), arg_info);
 		type exprtype = INFO_TYPE(arg_info);
 		type paramtype = PARAM_TYPE(param);
 		if(exprtype != paramtype){
-			CTIerrorLine(NODE_LINE(arg_node), "argumenttype matcht niet met functiedefinitie");
+			CTIerrorLine(NODE_LINE(arg_node), "argument type does not match function definition");
 		}
 
-
+		//keep checking till there are no parameters left
 		while(EXPRS_NEXT(args)!=NULL){
 			args = EXPRS_NEXT(args);
 			param = PARAM_NEXT(param);
@@ -65,30 +71,30 @@ node *CTfuncall(node *arg_node, info *arg_info){
 			exprtype = INFO_TYPE(arg_info);
 			paramtype = PARAM_TYPE(param);
 			if(exprtype != paramtype){
-				CTIerrorLine(NODE_LINE(arg_node), "argumenttype matcht niet met functiedefinitie");
+				CTIerrorLine(NODE_LINE(arg_node), "argument type does not match function definition");
 			}
 		}
 	}
 
-	//geef type van aangeroepen functie mee aan info_type
+	//set info_type to return type of the function
 	INFO_TYPE(arg_info) = FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(arg_node)));
 
 	DBUG_RETURN(arg_node);
 }
 
-//check het type van de return van de functie
+//check type of return of function against function type
 node *CTfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfundef");
 
 	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node)){
-		CTIerrorLine(NODE_LINE(arg_node), "Returntype is niet hetzelfde als functietype");
+		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type");
 	}
 
 	DBUG_RETURN(arg_node);
 }
 
-//geef type van varlet mee aan info_type
+//set info_type to type of varlet
 node *CTvarlet(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvarlet");
 	
@@ -97,16 +103,16 @@ node *CTvarlet(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//check vardec type met de initialisatie
+//check vardec type with initialisation
 node *CTvardec(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvardec");
 
-	//check als er een initialisatie is
+	//only check if there is a initialisation
 	if(VARDEC_INIT(arg_node)!= NULL){
 		VARDEC_INIT(arg_node) = TRAVdo(VARDEC_INIT(arg_node), arg_info);
 		type vartype = INFO_TYPE(arg_info);
 		if(vartype != VARDEC_TYPE(arg_node)){
-			CTIerrorLine(NODE_LINE(arg_node), "Type variabele klopt niet");
+			CTIerrorLine(NODE_LINE(arg_node), "Initialisation value does not match the type of the declared variable");
 		}
 	}
 	//ga verder met traversal
@@ -115,23 +121,23 @@ node *CTvardec(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//check het type van de assign
+//check type assign
 node *CTassign(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTassign");
 
-	//vergelijk het type van de varlet met het type van de expression na de =
+	//compare varlet type with assignent expression type
 	ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
 	type vartype = INFO_TYPE(arg_info);
 	ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
 	type exprtype = INFO_TYPE(arg_info);
 	if(vartype != exprtype){
-		CTIerrorLine(NODE_LINE(arg_node), "De expressie van de assign geeft het verkeerde type");
+		CTIerrorLine(NODE_LINE(arg_node), "The expression type of the assign does not match the variable type");
 	}
 
 	DBUG_RETURN(arg_node);
 }
 
-//geef het type van de var mee aan de info_type
+//set info_type to var type
 node *CTvar(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTvar");
 
@@ -140,13 +146,18 @@ node *CTvar(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//geef het type van de cast mee aan de info_type
+//rewrite cast and set info_type to cast type
 node *CTcast(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTcast");
+
 	CAST_EXPRESSION(arg_node) = TRAVdo(CAST_EXPRESSION(arg_node), arg_info);
 	type exprType = INFO_TYPE(arg_info);
 	type castType = CAST_TYPE(arg_node);
+
+	//set info type to cast type
 	INFO_TYPE(arg_info) = CAST_TYPE(arg_node);
+
+	//rewrite cast
 	if(exprType == T_boolean && castType == T_int){
 		node *expr = CAST_EXPRESSION(arg_node);
 		node *then = TBmakeNum(1);
@@ -179,57 +190,81 @@ node *CTcast(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//check de types van de operanden van de binop
+//check types of operands of binop and rewrite binop if neccessary
 node * CTbinop(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTbinop");
 
-	//vergelijk type van linker en rechter operanden van de binop
+	node *leftexpr = BINOP_LEFT(arg_node);
+  	node *rightexpr = BINOP_RIGHT(arg_node);
+  
+	//compare types of operands
 	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 	type typeleft = INFO_TYPE(arg_info);
 	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 	type typeright = INFO_TYPE(arg_info);
 	if(typeleft != typeright){
-		CTIerrorLine(NODE_LINE(arg_node), "De types van de linker en rechter expressie van de binaire operator matchen niet");
+		CTIerrorLine(NODE_LINE(arg_node), "Types of left and right expressions of the binop do not match");
 	}
 
-	//controleer of de juiste type operanden met de juiste operators gebruikt worden
+	//check if the right type of operands are used with the right operators
 	if((BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or)&&INFO_TYPE(arg_info)!=T_boolean){
-		CTIerrorLine(NODE_LINE(arg_node), "De gebruikte &&(and) of ||(or) operator kan alleen twee booleans vergelijken");
+		CTIerrorLine(NODE_LINE(arg_node), "The used &&(and) or ||(or) operator can only compare two booleans");
 	}
 	if((BINOP_OP(arg_node) == BO_lt || BINOP_OP(arg_node) == BO_le ||BINOP_OP(arg_node) == BO_gt || BINOP_OP(arg_node) == BO_ge) 
 		&& INFO_TYPE(arg_info) == T_boolean){
-		CTIerrorLine(NODE_LINE(arg_node), "De gebruikte operator kan alleen twee ints of twee floats vergelijken");
+		CTIerrorLine(NODE_LINE(arg_node), "The used operator can only compare two integers or floats");
 	}
 
-	//geef het juiste type mee aan de info_type
+	//set info_type to boolean
 	if(BINOP_OP(arg_node) == BO_lt || BINOP_OP(arg_node) == BO_le ||BINOP_OP(arg_node) == BO_gt || BINOP_OP(arg_node) == BO_ge ||
 		BINOP_OP(arg_node) == BO_eq || BINOP_OP(arg_node) == BO_ne || BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or){
 		INFO_TYPE(arg_info) = T_boolean;
 	}
+	
+	//rewrite and
+	if(BINOP_OP(arg_node)==BO_and){
+
+		node *pred = TBmakeMonop(MO_not, leftexpr);
+		node *then = TBmakeBool(0);
+		node *otherthen = TBmakeBool(1);
+		node *otherother = TBmakeBool(0);
+		node *other = TBmakeConditionexpr(rightexpr, otherthen, otherother);
+		arg_node = TBmakeConditionexpr(pred, then, other);
+	}
+
+  	//rewrite or
+	else if(BINOP_OP(arg_node) == BO_or){
+		node *orthen = TBmakeBool(1);
+		node *orotherthen = TBmakeBool(1);
+		node *orotherother = TBmakeBool(0);
+		node *orother = TBmakeConditionexpr(rightexpr, orotherthen, orotherother);
+		arg_node = TBmakeConditionexpr(leftexpr, orthen, orother);
+	}
 
 	DBUG_RETURN(arg_node);
 }
 
-//check type van monop met operand
+//check type of monop with operand
 node *CTmonop(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTmonop");
 
+	//get type of operand in info_type
 	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
-	//info_type is nu gevuld door operand van de monop
+	
 
-	//controleren of het type met de operator gebruikt kan worden
+	//check if type is boolean.
 
-	if(MONOP_OP(arg_node) ==MO_not && INFO_TYPE(arg_info) != T_boolean){
-		CTIerrorLine(NODE_LINE(arg_node), "!(not) kan alleen maar met een boolean operand gebruikt worden");
+	if(MONOP_OP(arg_node) == MO_not && INFO_TYPE(arg_info) != T_boolean){
+		CTIerrorLine(NODE_LINE(arg_node), "!(not) can only be used with a boolean operand");
 	}
 	if(MONOP_OP(arg_node) == MO_neg && INFO_TYPE(arg_info) == T_boolean){
-		CTIerrorLine(NODE_LINE(arg_node), "-(neg) kan niet met een boolean operand gebruikt worden");
+		CTIerrorLine(NODE_LINE(arg_node), "-(neg) can only be used with a boolean operand");
 	}
 
 	DBUG_RETURN(arg_node);
 }
 
-//geef type van return expression terug
+//set info_type to type of return expression
 node * CTreturn(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTreturn");
 
@@ -243,7 +278,7 @@ node * CTreturn(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//geef type van int mee aan de info_type
+//set info_type to int
 node *CTnum(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTNum");
 
@@ -252,7 +287,7 @@ node *CTnum(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//geef type van bool mee aan de info_type
+//set info_type to boolean
 node *CTbool(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTBool");
 
@@ -261,7 +296,7 @@ node *CTbool(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//geef type van float mee aan de info_type
+//set info_type to float
 node *CTfloat(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTFloat");
 
@@ -270,7 +305,7 @@ node *CTfloat(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//start de traversal
+//start traversal
 node *CTchecktypes( node *syntaxtree){
   DBUG_ENTER("CTchecktypes");
 
