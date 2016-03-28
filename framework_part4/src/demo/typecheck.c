@@ -219,6 +219,10 @@ node * CTbinop(node *arg_node, info *arg_info){
 	if(BINOP_OP(arg_node) == BO_lt || BINOP_OP(arg_node) == BO_le ||BINOP_OP(arg_node) == BO_gt || BINOP_OP(arg_node) == BO_ge ||
 		BINOP_OP(arg_node) == BO_eq || BINOP_OP(arg_node) == BO_ne || BINOP_OP(arg_node) == BO_and || BINOP_OP(arg_node) == BO_or){
 		INFO_TYPE(arg_info) = T_boolean;
+		BINOP_OPTYPE(arg_node) = T_boolean;
+	}
+	else{
+		BINOP_OPTYPE(arg_node) = typeleft;
 	}
 	
 	//rewrite and
@@ -240,7 +244,6 @@ node * CTbinop(node *arg_node, info *arg_info){
 		node *orother = TBmakeConditionexpr(rightexpr, orotherthen, orotherother);
 		arg_node = TBmakeConditionexpr(leftexpr, orthen, orother);
 	}
-
 	DBUG_RETURN(arg_node);
 }
 
