@@ -65,7 +65,7 @@ static info *MakeInfo(void)
 
   result = (info *)MEMmalloc(sizeof(info));
 
-  INFO_TOP( result)= 0;
+  INFO_TOP( result)= 1;
   INFO_SIZE(result) = 20;
   INFO_SCOPE( result) = 0;
   INFO_COUNTER( result) = 0;
@@ -153,13 +153,29 @@ node *LINKvar(node *arg_node, info *arg_info){
   DBUG_RETURN(arg_node);
 }
 
+node *LINKassign( node *arg_node, info *arg_info){
+  DBUG_ENTER("LINKassign");
+  printf("zit in assign\n");
+
+  if(ASSIGN_LET(arg_node)!=NULL){
+    printf("BEVAT VARLET IN ASSIGN\n");
+  }
+
+  ASSIGN_LET(arg_node) =  TRAVdo(ASSIGN_LET( arg_node), arg_info);
+  ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info); 
+  DBUG_RETURN(arg_node);
+}
+
 //search varlet in symbol tables and fill link (decl)
 node *LINKvarlet(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvarlet");
 
+
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
+
+  printf("VARLET NAME: %s - SYMBOL NAME: %s SCOPE: %d\n",VARLET_NAME(arg_node), SYMBOL_NAME(symbol), scope);
   
   //search through stack
   while(!found && scope > 0){
@@ -177,7 +193,13 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         VARLET_DECL(arg_node) = symbol; 
         VARLET_NAME(arg_node) = SYMBOL_NAME(symbol); 
         found = true;
-        SYMBOL_STATE(symbol) = -1;        
+
+        printf("PROBEREN VARLET DECL TE VULLEN\n");
+        if(VARLET_DECL(arg_node) != NULL){
+          printf("VARLET DELC IS GEVULD\n");
+        }   
+        SYMBOL_STATE(symbol) = -1;  
+   
       }
       else{
           symbol = SYMBOL_NEXT(symbol);
