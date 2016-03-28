@@ -100,8 +100,12 @@
         <traversal id="GBC" name="Generate code" default="sons" include="gen_byte_code.h">
           <travuser>
             <node name="FunDef"/>
-            <nodeset name="BinOp"/>
-            <nodeset name="Assign"/>
+            <node name="VarDec"/>
+            <node name="BinOp"/>
+            <node name="Assign"/>
+            <node name="Var"/>
+            <node name="VarLet"/>
+            <node name="Num"/>
           </travuser>
         </traversal>
 
@@ -428,6 +432,18 @@
           </targets>
         </type>
       </attribute>
+      <attribute name="Place">
+        <type name="Int">
+          <targets>
+            <target mandatory="no">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
     </attributes>
   </node>
 
@@ -589,7 +605,7 @@
       </targets>
     </son>
   </sons>
-  <attributes />
+   <attributes/>
 </node>
 
 <!-- node vardec-->

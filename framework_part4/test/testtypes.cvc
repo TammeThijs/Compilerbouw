@@ -11,10 +11,8 @@ int main(){
 }
 bool hoi(int x){
 	bool y = (bool) x;
-	if(!y){
-		return false;
+	for(int i = 1, i<10){
+		x = x + 1;
 	}
-	else{
-		return true;
-	}
+	return true;
 }

@@ -136,6 +136,7 @@ node *LINKvar(node *arg_node, info *arg_info){
       if(STRsuffix(varName, symbolName)){
         VAR_DECL(arg_node) = symbol;
         found = true;
+        SYMBOL_STATE(symbol) =-1;
       }
       else{
           symbol = SYMBOL_NEXT(symbol);
@@ -174,6 +175,7 @@ node *LINKvarlet(node *arg_node, info *arg_info){
       if(STRsuffix(varletName, symbolName)){
         VARLET_DECL(arg_node) = symbol;
         found = true;
+        SYMBOL_STATE(symbol) = -1;
       }
       else{
           symbol = SYMBOL_NEXT(symbol);
