@@ -24,14 +24,14 @@ struct INFO {
 	int subroutine;
 	int varcount;
 	int constantcount;
-	int constints [50];
+	node *consts [50];
 };
 
 #define INFO_CODE(n) ((n)->code)
 #define INFO_SUBROUTINE(n) ((n)->subroutine)
 #define INFO_VARCOUNT(n) ((n)->varcount)
 #define INFO_CONSTCOUNT(n) ((n)->constantcount)
-#define INFO_CONSTINTS(n) ((n)->constints)
+#define INFO_CONSTS(n) ((n)->consts)
 
 static info *MakeInfo(void)
 {
@@ -64,6 +64,21 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		fputs("main:\n", INFO_CODE(arg_info));
 		fputs("esr 2\n", INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+		fputs("\n", INFO_CODE(arg_info));
+		for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
+			if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
+				char buffer[20];
+				sprintf(buffer, "%d", NUM_VALUE(INFO_CONSTS(arg_info)[i]));
+				char *command = STRcatn(3, ".const int  ", buffer, "\n");
+				fputs(command, INFO_CODE(arg_info));
+			}
+			else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 31){
+				char buffer[20];
+				sprintf(buffer, "%f", FLOAT_VALUE(INFO_CONSTS(arg_info)[i]));
+				char *command = STRcatn(3, ".const float  ", buffer, "\n");
+				fputs(command, INFO_CODE(arg_info));
+			}
+		}
 	}
 	DBUG_RETURN(arg_node);
 }
@@ -82,13 +97,81 @@ node *GBCassign( node *arg_node, info *arg_info){
 
 node *GBCbinop( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCbinop");
-
+	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
+	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
+	if(BINOP_OP(arg_node) == BO_add){
+		if(BINOP_OPTYPE(arg_node) == T_int){
+			fputs("iadd\n", INFO_CODE(arg_info));
+		}
+		else if(BINOP_OPTYPE(arg_node) == T_float){
+			fputs("fadd\n", INFO_CODE(arg_info));
+		}
+	}
+	else if(BINOP_OP(arg_node) == BO_mul){
+		if(BINOP_OPTYPE(arg_node) == T_int){
+			fputs("imul\n", INFO_CODE(arg_info));
+		}
+		else if(BINOP_OPTYPE(arg_node) == T_float){
+			fputs("fmul\n", INFO_CODE(arg_info));
+		}
+	}
+	else if(BINOP_OP(arg_node) == BO_sub){
+		if(BINOP_OPTYPE(arg_node) == T_int){
+			fputs("isub\n", INFO_CODE(arg_info));
+		}
+		else if(BINOP_OPTYPE(arg_node) == T_float){
+			fputs("fsub\n", INFO_CODE(arg_info));
+		}
+	}
+	else if(BINOP_OP(arg_node) == BO_div){
+		if(BINOP_OPTYPE(arg_node) == T_int){
+			fputs("idiv\n", INFO_CODE(arg_info));
+		}
+		else if(BINOP_OPTYPE(arg_node) == T_float){
+			fputs("fdiv\n", INFO_CODE(arg_info));
+		}
+	}
+	else if(BINOP_OP(arg_node) == BO_mod){
+		fputs("irem\n", INFO_CODE(arg_info));
+	}
 	DBUG_RETURN(arg_node);
 }
 
 node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvar");
+	int place = -1;
 
+	printf("CHECKvar\n");
+	
+	if(VAR_DECL(arg_node) != NULL){
+		printf("CHECKvar NULL\n");
+		if(SYMBOL_STATE(VAR_DECL(arg_node)) == -1){
+			SYMBOL_STATE(VAR_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
+			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
+		}
+		place = SYMBOL_STATE(VAR_DECL(arg_node));
+		if(SYMBOL_STATE(VAR_DECL(arg_node)) == 0){
+			fputs("iload_0\n", INFO_CODE(arg_info));
+		}
+		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 1){
+			fputs("iload_1\n", INFO_CODE(arg_info));
+		}
+		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 2){
+			fputs("iload_2\n", INFO_CODE(arg_info));
+		}
+		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 3){
+			fputs("iload_3\n", INFO_CODE(arg_info));
+		}
+		else{
+			char buffer[1];
+			sprintf(buffer, "%d", place);
+			char *command = STRcatn(3, "iload ", buffer, "\n");
+			fputs(command, INFO_CODE(arg_info));
+		}
+	}
+	
+	
+	
 	DBUG_RETURN(arg_node);
 }
 
@@ -114,6 +197,12 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
+node *GBCreturn( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCreturn");
+		//nog return type in typecheck fixen
+	fputs("ireturn\n", INFO_CODE(arg_info));
+	DBUG_RETURN(arg_node);
+}
 node *GBCnum( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCnum");
 	if(NUM_VALUE(arg_node) == 0){
@@ -123,18 +212,59 @@ node *GBCnum( node *arg_node, info *arg_info){
 		fputs("iloadc_1\n", INFO_CODE(arg_info));
 	}
 	else if (NUM_VALUE(arg_node) == -1){
-		fputs("iload_m1\n", INFO_CODE(arg_info));
+		fputs("iloadc_m1\n", INFO_CODE(arg_info));
 	}
 	else {
 		if(INFO_CONSTCOUNT(arg_info) == 0){
-			fputs("iload_0\n", INFO_CODE(arg_info));
+			fputs("iloadc 0\n", INFO_CODE(arg_info));
+			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
 		}
 		else{
 			char buffer[1];
 			sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
-			char *command  = STRcatn(3,"iload ", buffer, "\n");
+			char *command  = STRcatn(3,"iloadc ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
+			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
 		}
+	}
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfloat( node *arg_node, info *arg_info){
+	DBUG_ENTER("CBGfloat");
+	if(FLOAT_VALUE(arg_node) == 0.0){
+		fputs("floadc_0\n", INFO_CODE(arg_info));
+	}
+	else if (FLOAT_VALUE(arg_node) == 1.0){
+		fputs("floadc_1\n", INFO_CODE(arg_info));
+	}
+	else {
+		if(INFO_CONSTCOUNT(arg_info) == 0){
+			fputs("floadc 0\n", INFO_CODE(arg_info));
+			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
+		}
+		else{
+			char buffer[1];
+			sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
+			char *command  = STRcatn(3,"floadc ", buffer, "\n");
+			fputs(command, INFO_CODE(arg_info));
+			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
+		}
+	}
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCbool( node *arg_node, info *arg_info){
+	DBUG_ENTER("DBGbool");
+	if(BOOL_VALUE(arg_node) == 0){
+		fputs("bloadc_f\n", INFO_CODE(arg_info));
+	}
+	else {
+		fputs("bloadc_t\n", INFO_CODE(arg_info));
 	}
 	DBUG_RETURN(arg_node);
 }
