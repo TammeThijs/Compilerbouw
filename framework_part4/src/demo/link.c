@@ -174,9 +174,10 @@ node *LINKvarlet(node *arg_node, info *arg_info){
       char *symbolName = SYMBOL_NAME(symbol);
       char *varletName = VARLET_NAME(arg_node);
       if(STRsuffix(varletName, symbolName)){
-        VARLET_DECL(arg_node) = symbol;
+        VARLET_DECL(arg_node) = symbol; 
+        VARLET_NAME(arg_node) = SYMBOL_NAME(symbol); 
         found = true;
-        SYMBOL_STATE(symbol) = -1;
+        SYMBOL_STATE(symbol) = -1;        
       }
       else{
           symbol = SYMBOL_NEXT(symbol);

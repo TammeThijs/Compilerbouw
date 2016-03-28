@@ -95,8 +95,11 @@ node *GBCvar( node *arg_node, info *arg_info){
 node *GBCvarlet( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvarlet");
 	int place = -1;
+
+	printf("CHECK\n");
 	
 	if(VARLET_DECL(arg_node) != NULL){
+		printf("CHECK NULL\n");
 		if(SYMBOL_STATE(VARLET_DECL(arg_node)) == -1){
 			SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;

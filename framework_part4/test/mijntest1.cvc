@@ -1,19 +1,8 @@
-int k = 3;
-float z = 2.333;
-bool test = true;
+int main(){
 
-void foo(){
+	int k;
+	k = 2;
 
-	int k = 2;
-
-	int bar(int a){
-		int k = 3;
-
-		return 2*k;
-	}
-
-	return;
+	return k;
 }
 
-int k = 55;
-int q = 3333;
