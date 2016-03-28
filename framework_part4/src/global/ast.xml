@@ -97,16 +97,8 @@
           </travuser>
         </traversal>
 
-        <traversal id="RW" name="Rewrite Code" default="sons" include="rewrite.h">
+        <traversal id="CG" name="Generate code" default="sons" include="gen_byte_code.h">
           <travuser>
-            <node name="BinOp" />
-            <node name="Cast" />
-          </travuser>
-        </traversal>
-        
-        <traversal id="COP" name="Count operators" default="sons" include="count_operators.h">
-          <travuser>
-            <node name="BinOp" />
           </travuser>
         </traversal>
 
