@@ -72,47 +72,63 @@ static info *FreeInfo( info *info)
  * Traversal functions
  */
 
- node *INITglobaldec (node *arg_node, info *arg_info){
-  DBUG_ENTER("INITglobaldec");
+node *INITdeclarations (node *arg_node, info *arg_info){
+  DBUG_ENTER("INITdeclarations");
 
-  node *vardec;
+  node *stmts;
+  node *initbody;
+  node *fundef;
+  node *declarations;
+  node *assign;
 
-  if(INFO_ROOTNODE(arg_info) == NULL){
+  int counter = 0;
 
-    vardec = TBmakeVardec(GLOBALDEC_TYPE(arg_node), GLOBALDEC_NAME(arg_node), NULL, NULL, NULL);
-    node *initbody = TBmakeFunbody(vardec, NULL, NULL);
-    TBmakeFundef(T_unknown, "__init", NULL, initbody, NULL, NULL);
-    INFO_ROOTNODE(arg_info) = vardec;
 
-  } else {
-    vardec = TBmakeVardec(GLOBALDEC_TYPE(arg_node), GLOBALDEC_NAME(arg_node), NULL, NULL, INFO_ROOTNODE(arg_info));
-    INFO_ROOTNODE(arg_info) = vardec;  
+  if(DECLARATIONS_DECL(arg_node) != NULL && INFO_ROOTNODE(arg_info) == NULL &&
+   NODE_TYPE(DECLARATIONS_DECL(arg_node)) == 7){
+    initbody = TBmakeFunbody(NULL, NULL, NULL);
+    fundef = TBmakeFundef(T_unknown, "__init", NULL, initbody, NULL, NULL);
+    declarations = TBmakeDeclarations(fundef, NULL);
+    INFO_ROOTNODE(arg_info) = initbody;
   }
+
+  // node *tmp = arg_node;
+  // while(DECLARATIONS_NEXT(tmp) != NULL){
+  //   tmp = DECLARATIONS_NEXT(tmp);
+  //   counter++;
+  // }
+
+  DECLARATIONS_DECL( arg_node) = TRAVopt( DECLARATIONS_DECL( arg_node), arg_info);
+  DECLARATIONS_NEXT( arg_node) = TRAVopt( DECLARATIONS_NEXT( arg_node), arg_info);
+
+  if(INFO_COUNTER(arg_info) > 0){
+  assign = dequeue(arg_info);  
+  stmts = TBmakeStmts(assign, NULL);
+  printf("type %d\n", NODE_TYPE(assign));
+  // FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
+  }
+
+
+  
+  
 
   DBUG_RETURN(arg_node);
  }
 
+
  node *INITglobaldef (node *arg_node, info *arg_info){
   DBUG_ENTER("INITglobaldef");
 
-  node *vardec;
+  if(GLOBALDEF_INIT(arg_node) != NULL){
+      node *varlet = TBmakeVarlet(GLOBALDEF_NAME(arg_node), NULL);
+      node *assign = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
+      arg_info = enqueue(arg_info, assign);
+  }
 
-  // if(INFO_ROOTNODE(arg_info) == NULL){
+  node *returnNode = TBmakeGlobaldef(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), GLOBALDEF_DIMS(arg_node), NULL);
 
-  //   vardec = TBmakeVardec(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), NULL, NULL, NULL);
-  //   node *initbody = TBmakeFunbody(vardec, NULL, NULL);
-  //   TBmakeFundef(T_unknown, "__init", NULL, initbody, NULL, NULL);
-  //   INFO_ROOTNODE(arg_info) = vardec;
 
-  // } else {
-  //   vardec = TBmakeVardec(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), NULL, NULL, INFO_ROOTNODE(arg_info));
-  //   INFO_ROOTNODE(arg_info) = vardec;  
-  // }
-
-  node *varlet = TBmakeVarlet(GLOBALDEF_NAME(arg_node), NULL);
-  node *returnnode = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
-
-  DBUG_RETURN(returnnode);
+  DBUG_RETURN(returnNode);
  }
 
  node *INITfunbody (node *arg_node, info *arg_info){
@@ -129,8 +145,7 @@ static info *FreeInfo( info *info)
  }
 
   node *INITvardec (node *arg_node, info *arg_info){
-      DBUG_ENTER("INITglobaldef");
-
+      DBUG_ENTER("INITvardec");
 
     if(VARDEC_INIT(arg_node) != NULL){
 
@@ -159,7 +174,6 @@ static info *FreeInfo( info *info)
 
   node *INITstmts (node *arg_node, info *arg_info){
   DBUG_ENTER("INITstmts");
-
   DBUG_RETURN(arg_node);
  }
 

@@ -1,19 +1,13 @@
-int k = 9;
+extern int k;
+int a = 23;
+float z = 2.333;
+bool test = true;
 
-int main(){
+int foo(){
 
-	int abcd;
-	float qed = 2.0;
-	int abc = 1;
-
-	int foo(){
-		int def = 5;
-		float plat = 3.0;
-
-
-		return 2;
-	}
-
+	int k = 5;
 
 	return 1;
 }
+
+

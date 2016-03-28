@@ -60,7 +60,7 @@
 
         <traversal id="INIT" name="Initialisations to regular Assignments" default="sons" include="init_to_reg.h">
           <travuser>
-            <node name="GlobalDec" />
+            <node name="Declarations"/>
             <node name="GlobalDef"/>
             <node name="FunBody"/>
             <node name="VarDec" />

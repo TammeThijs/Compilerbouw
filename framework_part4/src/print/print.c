@@ -385,7 +385,7 @@ PRTglobaldef (node * arg_node, info * arg_info)
 
   }
 
-  printf("%s ",  GLOBALDEF_NAME( arg_node));
+  printf("%s",  GLOBALDEF_NAME( arg_node));
 
   if(GLOBALDEF_INIT( arg_node) != NULL){
     printf(" = ");

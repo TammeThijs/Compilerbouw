@@ -2,6 +2,7 @@
 #define _INIT_TO_REG_H_
 #include "types.h"
 
+extern node *INITdeclarations (node *arg_node, info *arg_info);
 extern node *INITglobaldef (node *arg_node, info *arg_info);
 extern node *INITglobaldec (node *arg_node, info *arg_info);
 extern node *INITvardec (node *arg_node, info *arg_info);
