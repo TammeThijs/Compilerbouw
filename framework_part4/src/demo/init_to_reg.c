@@ -173,7 +173,6 @@ node *INITdeclarations (node *arg_node, info *arg_info){
     }
 
     VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
-
     DBUG_RETURN(arg_node);
 
   }

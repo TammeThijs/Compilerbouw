@@ -40,6 +40,13 @@ SUBPHASE( sym,
           ALWAYS,
           pet)
 
+SUBPHASE( init,
+          "Initialisations to regular Assignments",
+          INITdoInitToReg,
+          ALWAYS, 
+          pet
+          ) 
+
 SUBPHASE( link, 
           "Create Links",
           LINKcreatelinks, 
@@ -51,14 +58,7 @@ SUBPHASE( ct,
           CTchecktypes, 
           ALWAYS,
           pet) 
-
-SUBPHASE( init,
-          "Initialisations to regular Assignments",
-          INITdoInitToReg,
-          ALWAYS, 
-          pet
-          ) 
-   
+  
 SUBPHASE( os, 
           "Optimise subtraction",
           OSdoOptSub, 
