@@ -73,6 +73,7 @@
             <node name="Program" />
             <node name="FunDef" />
             <node name="Funcall" />
+            <node name="Assign" />
             <node name="VarLet" />
             <node name="Var" />
           </travuser>
