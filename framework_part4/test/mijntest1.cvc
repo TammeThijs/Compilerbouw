@@ -1,7 +1,11 @@
-void main(){
+int main(){
 
 	int k = 3;
 
-	return;
+	int bar(){
+		return k;
+	}
+
+	return 1;
 }
 

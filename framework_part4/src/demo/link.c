@@ -99,16 +99,20 @@ node *LINKfundef( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKfundef");
 
   if(FUNDEF_SYMBOLTABLE(arg_node)!=NULL){
+    INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
     arg_info = push(arg_info, FUNDEF_SYMBOLTABLE(arg_node));
   }
   if(FUNDEF_FSYMBOLTABLE(arg_node)!=NULL){
     arg_info = add(arg_info, FUNDEF_FSYMBOLTABLE(arg_node));
   }
 
-  INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
   FUNDEF_FUNBODY(arg_node) =TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
-  INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
-  arg_info = pop(arg_info);
+
+  if(FUNDEF_SYMBOLTABLE(arg_node) != NULL){
+    INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
+    arg_info = pop(arg_info); 
+  }
+  
 
   DBUG_RETURN(arg_node);
 }
@@ -117,12 +121,13 @@ node *LINKfundef( node *arg_node, info *arg_info){
 node *LINKvar(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvar");
 
-  int scope = INFO_TOP(arg_info);
+    int scope = INFO_TOP(arg_info);
+
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
   
   //while not found and still a symbol table to be searched
-  while(!found && scope > 0){
+  while(!found && scope >= 0){
     while(symbol == NULL && scope>0){
       scope--;
       symbol = INFO_STACK(arg_info)[scope];
@@ -155,11 +160,6 @@ node *LINKvar(node *arg_node, info *arg_info){
 
 node *LINKassign( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKassign");
-  printf("zit in assign\n");
-
-  if(ASSIGN_LET(arg_node)!=NULL){
-    printf("BEVAT VARLET IN ASSIGN\n");
-  }
 
   ASSIGN_LET(arg_node) =  TRAVdo(ASSIGN_LET( arg_node), arg_info);
   ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info); 
@@ -170,15 +170,17 @@ node *LINKassign( node *arg_node, info *arg_info){
 node *LINKvarlet(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvarlet");
 
-
   int scope = INFO_TOP(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
-  bool found = false;
 
-  printf("VARLET NAME: %s - SYMBOL NAME: %s SCOPE: %d\n",VARLET_NAME(arg_node), SYMBOL_NAME(symbol), scope);
+
+  bool found = false;
   
   //search through stack
-  while(!found && scope > 0){
+  while(!found && scope >= 0){
+
+    printf("VARLET NAME: %s - SYMBOL NAME: SCOPE: %d\n",VARLET_NAME(arg_node), scope);
+
     while(symbol == NULL && scope>0){
       scope--;
       symbol = INFO_STACK(arg_info)[scope];
@@ -193,13 +195,8 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         VARLET_DECL(arg_node) = symbol; 
         VARLET_NAME(arg_node) = SYMBOL_NAME(symbol); 
         found = true;
-
-        printf("PROBEREN VARLET DECL TE VULLEN\n");
-        if(VARLET_DECL(arg_node) != NULL){
-          printf("VARLET DELC IS GEVULD\n");
-        }   
-        SYMBOL_STATE(symbol) = -1;  
-   
+      printf("GEVONDEN\n");
+        SYMBOL_STATE(symbol) = -1;     
       }
       else{
           symbol = SYMBOL_NEXT(symbol);

@@ -15,10 +15,11 @@
 #include "ctinfo.h"
 
  struct INFO {
-  type lastType;
+  int lastType;
 };
 
 #define INFO_TYPE(n)((n)->lastType)
+
 
 static info *MakeInfo(void)
 {
@@ -27,6 +28,9 @@ static info *MakeInfo(void)
   DBUG_ENTER( "MakeInfo");
 
   result = (info *)MEMmalloc(sizeof(info));
+
+  INFO_TYPE( result) = 0;
+
 
   DBUG_RETURN( result);
 }
@@ -82,13 +86,13 @@ node *CTfuncall(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-//check type of return of function against function type
-node *CTfundef(node *arg_node, info *arg_info){
+	//check type of return of function against function type
+	node *CTfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfundef");
 
 	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node)){
-		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type");
+		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type fun: %d ret:  %d", FUNDEF_TYPE(arg_node), INFO_TYPE(arg_info));
 	}
 
 	DBUG_RETURN(arg_node);
