@@ -56,7 +56,7 @@ static info *FreeInfo( info *info)
   DBUG_RETURN( info);
 }
 
-//check if function name = main, if so then traverser
+//check if function name = main, if so then traverse
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
 	char *main_name = "main";
@@ -213,7 +213,21 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCreturn");
 	//no time left to make this depend on type...
-	fputs("ireturn\n", INFO_CODE(arg_info));
+	if(RETURN_TYPE(arg_node) == T_int){
+		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		fputs("ireturn\n", INFO_CODE(arg_info));
+	}
+	else if(RETURN_TYPE(arg_node) == T_float){
+		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		fputs("freturn\n", INFO_CODE(arg_info));
+	}
+	else if(RETURN_TYPE(arg_node) == T_boolean){
+		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		fputs("breturn\n", INFO_CODE(arg_info));
+	}
+	else{
+		fputs("return\n", INFO_CODE(arg_info));
+	}
 	DBUG_RETURN(arg_node);
 }
 

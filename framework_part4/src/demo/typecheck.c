@@ -277,9 +277,11 @@ node * CTreturn(node *arg_node, info *arg_info){
 
 	if(RETURN_EXPRESSION(arg_node) == NULL){
 		INFO_TYPE(arg_info) = T_unknown;
+		RETURN_TYPE(arg_node) = T_unknown;
 	}
 	else{
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		RETURN_TYPE(arg_node) = INFO_TYPE(arg_info);
 	}
 
 	DBUG_RETURN(arg_node);
