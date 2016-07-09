@@ -1,13 +1,8 @@
 
 int main(){
-	int i;
-	int j;
-	float k;
-	bool f;
-	k = 2.0;
-	i = 2;
-	j = 3;
-	f = false;
+	int i = 1;
+	int j = 2;
 	i = i * j;
-	return i;
+	float k = 0.0;
+	return 0;
 }

@@ -151,31 +151,43 @@ node *GBCbinop( node *arg_node, info *arg_info){
 node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvar");
 	int place = -1;
-
-	printf("CHECKvar\n");
-	
+	char *type;
 	if(VAR_DECL(arg_node) != NULL){
-		if(SYMBOL_STATE(VAR_DECL(arg_node)) == -1){
+		if(SYMBOL_STATE(VAR_DECL(arg_node)) == place){
 			SYMBOL_STATE(VAR_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
 		}
 		place = SYMBOL_STATE(VAR_DECL(arg_node));
+		if (SYMBOL_TYPE(VAR_DECL(arg_node)) == T_int){
+			type = "i";
+		}
+		else if(SYMBOL_TYPE(VAR_DECL(arg_node)) == T_float){
+			type = "f";
+		}
+		else{
+			type = "b";
+		}
 		if(SYMBOL_STATE(VAR_DECL(arg_node)) == 0){
-			fputs("iload_0\n", INFO_CODE(arg_info));
+			char *string = STRcat(type,"load_0\n");
+			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 1){
-			fputs("iload_1\n", INFO_CODE(arg_info));
+			char *string = STRcat(type,"load_1\n");
+			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 2){
-			fputs("iload_2\n", INFO_CODE(arg_info));
+			char *string = STRcat(type,"load_2\n");
+			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 3){
-			fputs("iload_3\n", INFO_CODE(arg_info));
+			char *string = STRcat(type,"load_3\n");
+			fputs(string, INFO_CODE(arg_info));
 		}
 		else{
 			char buffer[1];
 			sprintf(buffer, "%d", place);
-			char *command = STRcatn(3, "iload ", buffer, "\n");
+			char *string = STRcat(type,"load ");
+			char *command = STRcatn(3, string, buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
 	}
@@ -189,22 +201,29 @@ node *GBCvar( node *arg_node, info *arg_info){
 node *GBCvarlet( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvarlet");
 	int place = -1;
-
-	printf("CHECK\n");
-	
+	char *type;
 	if(VARLET_DECL(arg_node) != NULL){
-		printf("CHECK NULL\n");
-		if(SYMBOL_STATE(VARLET_DECL(arg_node)) == -1){
+		if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place){
 			SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 			INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
 		}
 		place = SYMBOL_STATE(VARLET_DECL(arg_node));
+		if(SYMBOL_TYPE(VARLET_DECL(arg_node)) == T_int){
+			type = "i";
+		}
+		else if(SYMBOL_TYPE(VARLET_DECL(arg_node)) == T_float){
+			type = "f";
+		}
+		else{
+			type = "b";
+		}
 	}
 	
 	
 	char buffer[1];
 	sprintf(buffer, "%d", place);
-	char *command = STRcatn(3, "istore ", buffer, "\n");
+	char *string = STRcat(type, "store ");
+	char *command = STRcatn(3, string, buffer, "\n");
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
@@ -212,17 +231,17 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 //write code return
 node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCreturn");
-	//no time left to make this depend on type...
+
 	if(RETURN_TYPE(arg_node) == T_int){
-		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
 		fputs("ireturn\n", INFO_CODE(arg_info));
 	}
 	else if(RETURN_TYPE(arg_node) == T_float){
-		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
 		fputs("freturn\n", INFO_CODE(arg_info));
 	}
 	else if(RETURN_TYPE(arg_node) == T_boolean){
-		//RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
 		fputs("breturn\n", INFO_CODE(arg_info));
 	}
 	else{
