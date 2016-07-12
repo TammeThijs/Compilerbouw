@@ -1,0 +1,59 @@
+main:
+esr 2
+iloadc_1
+iloadc_1
+bnot
+bloadc_f
+bloadc_t
+bloadc_f
+bnot
+bloadc_f
+bloadc_t
+bloadc_f
+bnot
+bloadc_f
+bloadc_t
+bloadc_f
+bnot
+bloadc_f
+bloadc_t
+bloadc_f
+iloadc_1
+bloadc_t
+bloadc_t
+bloadc_f
+bloadc_t
+bloadc_t
+bloadc_f
+bloadc_t
+bloadc_t
+bloadc_f
+bloadc_t
+bloadc_t
+bloadc_f
+iloadc_1
+iloadc_1
+iloadc_1
+iloadc 0
+iloadc_0
+bloadc_t
+bloadc_f
+iloadc_0
+iloadc_0
+bloadc_t
+bloadc_f
+iloadc_1
+floadc 1
+floadc_0
+bloadc_t
+bloadc_f
+floadc_0
+floadc_0
+bloadc_t
+bloadc_f
+iloadc_1
+iloadc_0
+ireturn
+
+.const int  5
+.const float  5.000000

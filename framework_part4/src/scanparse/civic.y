@@ -287,7 +287,23 @@ fundefs:  fundef
 fundef: EXPORT fundef
         {
           $$ = $2;
-        }
+        } 
+        | EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
+        {
+         $$ = TBmakeFundef($2, $3, NULL, NULL, NULL, NULL);
+        }   
+        | EXTERN VOID ID BRACKET_L BRACKET_R SEMICOLON
+        {
+         $$ = TBmakeFundef(T_unknown, $3, NULL, NULL, NULL, NULL);
+        } 
+        | EXTERN type ID BRACKET_L param BRACKET_R SEMICOLON
+        {
+         $$ = TBmakeFundef($2, $3, $5, NULL, NULL, NULL);
+        } 
+        | EXTERN VOID ID BRACKET_L param BRACKET_R SEMICOLON
+        {
+         $$ = TBmakeFundef(T_unknown, $3, $5, NULL, NULL, NULL);
+        }  
         |type ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
           $$ = TBmakeFundef($1, $2, NULL, $6, NULL, NULL);
@@ -320,7 +336,7 @@ fundef: EXPORT fundef
         {
           $$ = TBmakeFundef( T_unknown, $2, $4, NULL, NULL, NULL);
         }
-        ; 
+        ;
 
 param:  type ID COMMA param 
         {
