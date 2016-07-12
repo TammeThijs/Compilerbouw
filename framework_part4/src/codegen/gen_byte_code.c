@@ -150,7 +150,17 @@ node *GBCbinop( node *arg_node, info *arg_info){
 node *GBCmonop( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGmonop");
 	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
-
+	if(MONOP_OP(arg_node) == MO_not){
+		fputs("bnot\n", INFO_CODE(arg_info));
+	}
+	else{
+		if(MONOP_OPTYPE(arg_node) == T_int){
+			fputs("ineg\n", INFO_CODE(arg_info));
+		}
+		else{
+			fputs("fneg\n", INFO_CODE(arg_info));
+		}
+	}
 	DBUG_RETURN(arg_node);
 }
 //write code var

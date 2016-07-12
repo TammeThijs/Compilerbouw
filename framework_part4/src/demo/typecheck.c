@@ -91,7 +91,7 @@ node *CTfuncall(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfundef");
 
 	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
-	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node)){
+	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node) && FUNDEF_TYPE(arg_node) != T_unknown){
 		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type fun: %d ret:  %d", FUNDEF_TYPE(arg_node), INFO_TYPE(arg_info));
 	}
 
@@ -218,6 +218,10 @@ node * CTbinop(node *arg_node, info *arg_info){
 		&& INFO_TYPE(arg_info) == T_boolean){
 		CTIerrorLine(NODE_LINE(arg_node), "The used operator can only compare two integers or floats");
 	}
+	if(BINOP_OP(arg_node) == BO_add ||BINOP_OP(arg_node) == BO_mul ||BINOP_OP(arg_node) == BO_sub ||BINOP_OP(arg_node) == BO_div ||
+		BINOP_OP(arg_node) == BO_mod ){
+		BINOP_OPTYPE(arg_node) = typeleft;
+	}
 
 	//set info_type to boolean
 	if(BINOP_OP(arg_node) == BO_lt || BINOP_OP(arg_node) == BO_le ||BINOP_OP(arg_node) == BO_gt || BINOP_OP(arg_node) == BO_ge ||
@@ -264,8 +268,17 @@ node *CTmonop(node *arg_node, info *arg_info){
 	if(MONOP_OP(arg_node) == MO_not && INFO_TYPE(arg_info) != T_boolean){
 		CTIerrorLine(NODE_LINE(arg_node), "!(not) can only be used with a boolean operand");
 	}
+	else{
+		MONOP_OPTYPE(arg_node) = T_boolean;
+	}
 	if(MONOP_OP(arg_node) == MO_neg && INFO_TYPE(arg_info) == T_boolean){
 		CTIerrorLine(NODE_LINE(arg_node), "-(neg) can only be used with a boolean operand");
+	}
+	else if(INFO_TYPE(arg_info) == T_int){
+		MONOP_OPTYPE(arg_node) = T_int;
+	}
+	else{
+		MONOP_OPTYPE(arg_node) = T_float;
 	}
 
 	DBUG_RETURN(arg_node);

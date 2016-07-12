@@ -1171,6 +1171,18 @@
         </targets>
       </type>
     </attribute>
+    <attribute name="OpType">
+      <type name="Type">
+        <targets>
+          <target mandatory="no">
+            <any />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </type>
+    </attribute>
   </attributes>
 </node>
 <!--
