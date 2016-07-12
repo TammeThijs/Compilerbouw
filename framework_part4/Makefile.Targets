@@ -87,7 +87,7 @@ demo        = opt_sub.o symbol_table.o link.o typecheck.o init_to_reg.o
 TEST_DIRS := basic
 
 # Flags to pass to your compiler when running tests (e.g., a verbosity level).
-TEST_CFLAGS := ""
+# TEST_CFLAGS := ""
 
 # Whether to run tests that compare program output. Set to 1 after you have
 # implemented your assembly phase.
