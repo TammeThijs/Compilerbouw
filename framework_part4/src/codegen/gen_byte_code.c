@@ -147,6 +147,12 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+node *CBGmonop( node *arg_node, info *arg_info){
+	DBUG_ENTER("CBGmonop");
+	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
+	
+	DBUG_RETURN(arg_node);
+}
 //write code var
 node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvar");

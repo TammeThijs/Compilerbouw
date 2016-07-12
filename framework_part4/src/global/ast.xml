@@ -103,6 +103,7 @@
             <node name="FunDef"/>
             <node name="VarDec"/>
             <node name="BinOp"/>
+            <node name="MonOp"/>
             <node name="Assign"/>
             <node name="Var"/>
             <node name="VarLet"/>
