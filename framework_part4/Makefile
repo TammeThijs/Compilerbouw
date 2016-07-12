@@ -157,7 +157,7 @@ makesubdir: $(TARGETS)
 #
 
 check: all
-    @cd test; \
+	@cd test; \
         CIVAS=../$(TEST_CIVAS) \
         CIVVM=../$(TEST_CIVVM) \
         CIVCC=../$(TEST_CIVCC) \
