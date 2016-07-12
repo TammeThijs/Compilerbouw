@@ -1,4 +1,6 @@
+int c = 1;
+
 int test(int a, int b){
-	int c =  a*b;
+	c =  a*b;
 	return c+8-(b/2);
 }

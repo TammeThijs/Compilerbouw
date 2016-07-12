@@ -81,3 +81,23 @@ codegen     = gen_byte_code.o
 
 demo        = opt_sub.o symbol_table.o link.o typecheck.o init_to_reg.o
 
+# Subdirectories of "test/" to traverse into during testing. Enable
+# "nested_funs" and "arrays" when you start implementing those extensions.
+# "preprocess" is optional, for those who implemented the C preprocessor.
+TEST_DIRS := basic
+
+# Flags to pass to your compiler when running tests (e.g., a verbosity level).
+#TEST_CFLAGS := ""
+
+# Whether to run tests that compare program output. Set to 1 after you have
+# implemented your assembly phase.
+TEST_RUN_FUNCTIONAL := 0
+
+# Path to toolchain files, relative to the root directory (used for functional
+# test).
+TEST_CIVAS := bin/civas
+TEST_CIVVM := bin/civvm
+
+# Path to your compiler binary, relative to the root directory.
+TEST_CIVCC := bin/civicc
+
