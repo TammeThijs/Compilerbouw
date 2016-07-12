@@ -151,6 +151,19 @@ civicc: $(TARGETS)
 makesubdir: $(TARGETS)
 	@$(ECHO) ""
 
+###############################################################################
+#
+# TESTING
+#
+
+check: all
+    @cd test; \
+        CIVAS=../$(TEST_CIVAS) \
+        CIVVM=../$(TEST_CIVVM) \
+        CIVCC=../$(TEST_CIVCC) \
+        RUN_FUNCTIONAL=$(TEST_RUN_FUNCTIONAL) \
+        bash run.bash $(TEST_DIRS)
+
 
 ###############################################################################
 #
@@ -251,10 +264,6 @@ clean: makefiles $(addsuffix .clean,$(ALL_SOURCE_DIRS))
 	      exit 1 ;  \
 	 fi
 
-
-
-
-
 ###############################################################################
 #
 # Includes for dependency tracking mechanism
@@ -265,3 +274,4 @@ ifeq ($(CHECK_DEPS),yes)
     -include $(sort $(DEPS))
   endif
 endif
+

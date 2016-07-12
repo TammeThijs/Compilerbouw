@@ -1,27 +1,19 @@
-export int main(){
-
+int main(){
 	int a = scanInt();
 	int b = scanInt();
-
-	int c = euclides(a,b);
-		
+	int c = euclides(a,b);		
 	return 0;
-
 }
 
 int euclides(int a, int b){
-
 	while (a!=b){
 		
 		if(a>b) {
 		a = a-b;
 		}
-
 		else{
 		b = b-a;
-		}
-
-	
-}
+		}	
+	}
 	return a;
 }
