@@ -1,59 +1,16 @@
 main:
-esr 2
+esr 3
 iloadc_1
-iloadc_1
-bnot
-bloadc_f
-bloadc_t
-bloadc_f
-bnot
-bloadc_f
-bloadc_t
-bloadc_f
-bnot
-bloadc_f
-bloadc_t
-bloadc_f
-bnot
-bloadc_f
-bloadc_t
-bloadc_f
-iloadc_1
-bloadc_t
-bloadc_t
-bloadc_f
-bloadc_t
-bloadc_t
-bloadc_f
-bloadc_t
-bloadc_t
-bloadc_f
-bloadc_t
-bloadc_t
-bloadc_f
-iloadc_1
-iloadc_1
-iloadc_1
+istore 0
 iloadc 0
-iloadc_0
-bloadc_t
-bloadc_f
-iloadc_0
-iloadc_0
-bloadc_t
-bloadc_f
-iloadc_1
-floadc 1
+istore 1
 floadc_0
-bloadc_t
-bloadc_f
-floadc_0
-floadc_0
-bloadc_t
-bloadc_f
-iloadc_1
+fstore 2
+iload_0
+iload_1
+imul
+istore 0
 iloadc_0
 ireturn
 
-.const int  5
-.const float  5.000000
+.const int  2

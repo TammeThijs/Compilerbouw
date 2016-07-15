@@ -111,6 +111,12 @@
             <node name="Return"/>
             <node name="Float"/>
             <node name="Bool"/>
+            <node name="ConditionExpr"/>
+            <node name="Exprstmt"/>
+            <node name="If" />
+            <node name="While" />
+            <node name="DoWhile" />
+            <node name="For" />
           </travuser>
         </traversal>
 

@@ -14,5 +14,11 @@ extern node *GBCreturn( node *arg_node, info *arg_info);
 extern node *GBCfloat( node *arg_node, info *arg_info);
 extern node *GBCbool( node *arg_node, info *arg_info);
 extern node *GBCnum( node *arg_node, info *arg_info);
+extern node *GBCconditionexpr( node *arg_node, info *arg_info);
+extern node *GBCexprstmt( node *arg_node, info *arg_info);
+extern node *GBCif( node *arg_node, info *arg_info);
+extern node *GBCwhile( node *arg_node, info *arg_info);
+extern node *GBCdowhile( node *arg_node, info *arg_info);
+extern node *GBCfor( node *arg_node, info *arg_info);
 
 #endif

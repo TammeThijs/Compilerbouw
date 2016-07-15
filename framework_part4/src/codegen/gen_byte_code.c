@@ -60,11 +60,22 @@ static info *FreeInfo( info *info)
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
 	char *main_name = "main";
-
+	int locals  = 0;
+	if(FUNDEF_SYMBOLTABLE(arg_node)!= NULL){
+		locals = 1;
+		node * symbol = FUNDEF_SYMBOLTABLE(arg_node);
+		while(SYMBOL_NEXT(symbol) != NULL){
+			locals = locals + 1;
+			symbol = SYMBOL_NEXT(symbol);
+		}
+	}
 	//check if it is main
 	if(STReq(FUNDEF_NAME(arg_node), main_name)){
 		fputs("main:\n", INFO_CODE(arg_info));
-		fputs("esr 2\n", INFO_CODE(arg_info));
+		char buffer[20];
+		sprintf(buffer, "%d", locals);
+		char *command = STRcatn(3, "esr ", buffer, "\n");
+		fputs(command, INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 		fputs("\n", INFO_CODE(arg_info));
 
@@ -107,46 +118,64 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	//traverse first to put operands on stack
 	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
-
+	char *type;
+	if(BINOP_OPTYPE(arg_node) == T_int){
+		type = "i";
+	}
+	else if (BINOP_OPTYPE(arg_node) == T_float){
+		type = "f";
+	}
+	else{
+		type = "b";
+	}
 	//check which operand you have to write down
 	if(BINOP_OP(arg_node) == BO_add){
-		if(BINOP_OPTYPE(arg_node) == T_int){
-			fputs("iadd\n", INFO_CODE(arg_info));
-		}
-		else if(BINOP_OPTYPE(arg_node) == T_float){
-			fputs("fadd\n", INFO_CODE(arg_info));
-		}
+		char *ass = STRcat(type, "add\n");
+		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_mul){
-		if(BINOP_OPTYPE(arg_node) == T_int){
-			fputs("imul\n", INFO_CODE(arg_info));
-		}
-		else if(BINOP_OPTYPE(arg_node) == T_float){
-			fputs("fmul\n", INFO_CODE(arg_info));
-		}
+		char *ass = STRcat(type, "mul\n");
+		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_sub){
-		if(BINOP_OPTYPE(arg_node) == T_int){
-			fputs("isub\n", INFO_CODE(arg_info));
-		}
-		else if(BINOP_OPTYPE(arg_node) == T_float){
-			fputs("fsub\n", INFO_CODE(arg_info));
-		}
+		char *ass = STRcat(type, "sub\n");
+		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_div){
-		if(BINOP_OPTYPE(arg_node) == T_int){
-			fputs("idiv\n", INFO_CODE(arg_info));
-		}
-		else if(BINOP_OPTYPE(arg_node) == T_float){
-			fputs("fdiv\n", INFO_CODE(arg_info));
-		}
+		char *ass = STRcat(type, "div\n");
+		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_mod){
 		fputs("irem\n", INFO_CODE(arg_info));
 	}
+	else if(BINOP_OP(arg_node) == BO_lt){
+		char *ass = STRcat(type, "lt\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
+	else if(BINOP_OP(arg_node) == BO_le){
+		char *ass = STRcat(type, "le\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
+	else if(BINOP_OP(arg_node) == BO_gt){
+		char *ass = STRcat(type, "gt\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
+	else if(BINOP_OP(arg_node) == BO_ge){
+		char *ass = STRcat(type, "ge\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
+	else if(BINOP_OP(arg_node) == BO_eq){
+		char *ass = STRcat(type, "eq\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
+	else if(BINOP_OP(arg_node) == BO_ne){
+		char *ass = STRcat(type, "ne\n");
+		fputs(ass, INFO_CODE(arg_info));
+	}
 	DBUG_RETURN(arg_node);
 }
 
+//write assembly for monop
 node *GBCmonop( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGmonop");
 	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
@@ -266,6 +295,35 @@ node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+node *GBCconditionexpr( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCconditionexpr");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCexprstmt( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCexprstmt");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCif( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCif");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCwhile( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCwhile");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCdowhile( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCdowhile");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfor( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCfor");
+	DBUG_RETURN(arg_node);
+}
 //write load for constant
 node *GBCnum( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCnum");
