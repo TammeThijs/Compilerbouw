@@ -3,6 +3,8 @@ int main(){
 	bool a = true;
 	bool b = true;
 	bool c = false;
-	c = a || b;
+	if(a||b){
+	c = true;
+	}
 	return 0;
 }

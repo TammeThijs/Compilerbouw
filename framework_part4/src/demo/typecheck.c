@@ -236,21 +236,14 @@ node * CTbinop(node *arg_node, info *arg_info){
 	//rewrite and
 	if(BINOP_OP(arg_node)==BO_and){
 
-		node *pred = TBmakeMonop(MO_not, leftexpr);
 		node *then = TBmakeBool(0);
-		node *otherthen = TBmakeBool(1);
-		node *otherother = TBmakeBool(0);
-		node *other = TBmakeConditionexpr(rightexpr, otherthen, otherother);
-		arg_node = TBmakeConditionexpr(pred, then, other);
+		arg_node = TBmakeConditionexpr(leftexpr, then, rightexpr);
 	}
 
   	//rewrite or
 	else if(BINOP_OP(arg_node) == BO_or){
 		node *orthen = TBmakeBool(1);
-		node *orotherthen = TBmakeBool(1);
-		node *orotherother = TBmakeBool(0);
-		node *orother = TBmakeConditionexpr(rightexpr, orotherthen, orotherother);
-		arg_node = TBmakeConditionexpr(leftexpr, orthen, orother);
+		arg_node = TBmakeConditionexpr(leftexpr, orthen, rightexpr);
 	}
 	DBUG_RETURN(arg_node);
 }

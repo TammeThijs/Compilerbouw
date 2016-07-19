@@ -1,16 +1,17 @@
 main:
 esr 3
-iloadc_1
-istore 0
-iloadc 0
-istore 1
-floadc_0
-fstore 2
-iload_0
-iload_1
-imul
-istore 0
+bloadc_t
+bstore 0
+bloadc_t
+bstore 1
+bload_0
+branch_f 1_false_expr
+bload_1
+jump 2_end
+1_false_expr:
+bloadc_f
+2_end:
+bstore 2
 iloadc_0
 ireturn
 
-.const int  2

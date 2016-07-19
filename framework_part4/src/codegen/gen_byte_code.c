@@ -21,14 +21,14 @@
 
 struct INFO {
 	FILE *code;
-	int subroutine;
+	int branchcount;
 	int varcount;
 	int constantcount;
 	node *consts [50];
 };
 
 #define INFO_CODE(n) ((n)->code)
-#define INFO_SUBROUTINE(n) ((n)->subroutine)
+#define INFO_BRANCHCOUNT(n) ((n)->branchcount)
 #define INFO_VARCOUNT(n) ((n)->varcount)
 #define INFO_CONSTCOUNT(n) ((n)->constantcount)
 #define INFO_CONSTS(n) ((n)->consts)
@@ -41,7 +41,7 @@ static info *MakeInfo(void)
 
 	result = (info *)MEMmalloc(sizeof(info));
 	INFO_CODE(result) = fopen("program.out", "w+");
-	INFO_SUBROUTINE(result) = 2;
+	INFO_BRANCHCOUNT(result) = 0;
 	INFO_VARCOUNT(result) = 0;
 	INFO_CONSTCOUNT(result) = 0;
 	DBUG_RETURN( result);
@@ -297,16 +297,58 @@ node *GBCreturn( node *arg_node, info *arg_info){
 
 node *GBCconditionexpr( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCconditionexpr");
+	CONDITIONEXPR_IF(arg_node) = TRAVdo(CONDITIONEXPR_IF(arg_node), arg_info);
+	char buffer[20];
+	char *command;
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	command = STRcatn(3,"branch_f ", buffer, "_false_expr\n");
+	fputs(command, INFO_CODE(arg_info));
+	CONDITIONEXPR_ELSE(arg_node) = TRAVdo(CONDITIONEXPR_ELSE(arg_node), arg_info);
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	command = STRcatn(3,"jump ", buffer, "_end\n");
+	fputs(command, INFO_CODE(arg_info));
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info)-1);
+	command = STRcat(buffer, "_false_expr:\n");
+	fputs(command, INFO_CODE(arg_info));
+	CONDITIONEXPR_THEN(arg_node) = TRAVdo(CONDITIONEXPR_THEN(arg_node), arg_info);
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	command = STRcat(buffer, "_end:\n");
+	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
 
 node *GBCexprstmt( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCexprstmt");
+	EXPRSTMT_EXPR(arg_node) = TRAVdo(EXPRSTMT_EXPR(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
 node *GBCif( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCif");
+	IF_CONDITION(arg_node) = TRAVdo(IF_CONDITION(arg_node), arg_info);
+	char buffer[20];
+	char *command;
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	if(IF_ELSEBLOCK(arg_node) != NULL){
+		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+		command = STRcatn(3,"branch_f ", buffer, "_else\n");
+		fputs(command, INFO_CODE(arg_info));
+		IF_IFBLOCK(arg_node) = TRAVdo(IF_IFBLOCK(arg_node), arg_info);
+		INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+		command = STRcatn(3,"jump ", buffer, "_end\n");
+		fputs(command, INFO_CODE(arg_info));
+		command = STRcat(buffer, "_else:\n");
+		fputs(command, INFO_CODE(arg_info));
+		IF_ELSEBLOCK(arg_node) = TRAVdo(IF_ELSEBLOCK(arg_node), arg_info);
+		
+	}
+	
+	command = STRcat(buffer, "_end:\n");
+	fputs(command, INFO_CODE(arg_info));
+	
 	DBUG_RETURN(arg_node);
 }
 
