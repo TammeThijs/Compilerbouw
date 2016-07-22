@@ -1,17 +1,19 @@
 main:
-esr 3
-bloadc_t
-bstore 0
-bloadc_t
-bstore 1
-bload_0
-branch_f 1_false_expr
-bload_1
-jump 2_end
-1_false_expr:
-bloadc_f
-2_end:
-bstore 2
+esr 2
+iloadc_0
+istore 0
+iloadc_1
+istore 1
+1_dowhile:
+iload_0
+iload_1
+iadd
+istore 0
+iload_0
+iloadc 0
+ilt
+branch_t 1_dowhile
 iloadc_0
 ireturn
 
+.const int  10

@@ -98,27 +98,7 @@
           </travuser>
         </traversal>
 
-        <traversal id="GBC" name="Generate code" default="sons" include="gen_byte_code.h">
-          <travuser>
-            <node name="FunDef"/>
-            <node name="VarDec"/>
-            <node name="BinOp"/>
-            <node name="MonOp"/>
-            <node name="Assign"/>
-            <node name="Var"/>
-            <node name="VarLet"/>
-            <node name="Num"/>
-            <node name="Return"/>
-            <node name="Float"/>
-            <node name="Bool"/>
-            <node name="ConditionExpr"/>
-            <node name="Exprstmt"/>
-            <node name="If" />
-            <node name="While" />
-            <node name="DoWhile" />
-            <node name="For" />
-          </travuser>
-        </traversal>
+        <traversal id="GBC" name="Generate code" default="user" include="gen_byte_code.h"/>
 
         <traversal id="OS" name="Optimise subtraction" default="sons" include="opt_sub.h">
           <travuser>

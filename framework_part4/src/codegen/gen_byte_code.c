@@ -56,6 +56,36 @@ static info *FreeInfo( info *info)
   DBUG_RETURN( info);
 }
 
+node *GBCprogram(node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCprogram");
+	PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCsymbol(node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCsymbol");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfsymbol(node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCfsymbol");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCdeclarations(node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCdeclarations");
+	DECLARATIONS_DECL(arg_node) = TRAVdo(DECLARATIONS_DECL(arg_node), arg_info);
+	DECLARATIONS_NEXT(arg_node) = TRAVopt(DECLARATIONS_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfundefs(node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCfundefs");
+	FUNDEFS_FUNDEF(arg_node) = TRAVdo(FUNDEFS_FUNDEF(arg_node), arg_info);
+	FUNDEFS_NEXT(arg_node) = TRAVopt(FUNDEFS_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
 //check if function name = main, if so then traverse
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
@@ -98,9 +128,64 @@ node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
+node *GBCglobaldef( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCglobaldef");
+	GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
+	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCglobaldec( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCglobaldec");
+	GLOBALDEC_DIMS(arg_node) = TRAVopt(GLOBALDEC_DIMS(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCids( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCids");
+	IDS_NEXT(arg_node) = TRAVopt(IDS_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfunbody( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCfunbody");
+	FUNBODY_VARDEC(arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
+	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
+	FUNBODY_STATEMENT(arg_node) = TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCparam( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCparam");
+	PARAM_DIMS(arg_node) = TRAVdo( PARAM_DIMS(arg_node), arg_info);
+	PARAM_NEXT(arg_node) = TRAVopt(PARAM_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCcast( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCcast");
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCexprs( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCexprs");
+	EXPRS_EXPRS(arg_node) = TRAVdo( EXPRS_EXPRS(arg_node), arg_info);
+	EXPRS_NEXT(arg_node) = TRAVopt(EXPRS_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCstmts( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCstmts");
+	STMTS_STMT(arg_node) = TRAVdo( STMTS_STMT(arg_node), arg_info);
+	STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
 //check vardec
 node *GBCvardec( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvardec");
+	VARDEC_INIT(arg_node) = TRAVopt(VARDEC_INIT(arg_node), arg_info);
+	VARDEC_NEXT(arg_node) = TRAVopt(VARDEC_NEXT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
@@ -109,6 +194,18 @@ node *GBCassign( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCassign");
 	ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
 	ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCarrexpr( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCexprs");
+	ARREXPR_EXPRS(arg_node) = TRAVdo( ARREXPR_EXPRS(arg_node), arg_info);
+	DBUG_RETURN(arg_node);
+}
+
+node *GBCfuncall( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCfuncall");
+	FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
@@ -276,7 +373,7 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 //write code return
 node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCreturn");
-
+	printf("in de return");
 	if(RETURN_TYPE(arg_node) == T_int){
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
 		fputs("ireturn\n", INFO_CODE(arg_info));
@@ -354,11 +451,37 @@ node *GBCif( node *arg_node, info *arg_info){
 
 node *GBCwhile( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCwhile");
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	char buffer[20];
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	char *commandwhile = STRcat(buffer, "_while");
+	char *command = STRcat(commandwhile, ":\n");
+	fputs(command, INFO_CODE(arg_info));
+	WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	command = STRcatn(3, "branch_f ", buffer, "_end\n");
+	fputs(command, INFO_CODE(arg_info));
+	WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
+	command = STRcatn(3,"jump ", commandwhile, "\n");
+	fputs(command, INFO_CODE(arg_info));
+	command = STRcat(buffer, "_end: \n");
+	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
 
 node *GBCdowhile( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCdowhile");
+	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
+	char buffer[20];
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+	char *commandwhile = STRcat(buffer, "_dowhile");
+	char *command = STRcat(commandwhile, ":\n");
+	fputs(command, INFO_CODE(arg_info));
+	DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
+	DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
+	command = STRcatn(3, "branch_t ", commandwhile, "\n");
+	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
 
@@ -434,6 +557,11 @@ node *GBCbool( node *arg_node, info *arg_info){
 	}
 	DBUG_RETURN(arg_node);
 }
+
+node *GBCerror( node *arg_node, info *arg_info){
+	DBUG_ENTER("GBCerror");
+	DBUG_RETURN(arg_node);
+}
 /*
  * Traversal start function
  */
@@ -444,6 +572,7 @@ node *GBCdoGenByteCode( node *syntaxtree)
 
   info *arg_info;
   DBUG_ENTER("GBCdoGenByteCode");
+  printf("bytecode maken\n");
   arg_info = MakeInfo();
 
   TRAVpush( TR_gbc);   // Push traversal "cbg" as defined in ast.xml

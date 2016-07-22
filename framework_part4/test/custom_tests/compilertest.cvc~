@@ -1,10 +1,10 @@
 
 int main(){
-	bool a = true;
-	bool b = true;
-	bool c = false;
-	if(a||b){
-	c = true;
+	int x = 0;
+	int y = 1;
+	do{
+		x = x + y;
 	}
+	while(x<10);
 	return 0;
 }
