@@ -1,0 +1,12 @@
+void testfunctie(){
+	float a = 5.5;
+	float b = 1.1;
+	float c = 3.3;
+
+
+	for (int i = 3, 3){
+		for (int i = 2, 0){
+			i = 5;
+		}
+	}
+}

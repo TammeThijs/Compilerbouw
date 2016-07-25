@@ -25,11 +25,13 @@
 
  struct INFO {
   node *root_node;
+  int isFor;
   int state;
 };
 
 #define INFO_ROOT_NODE(n) ((n)->root_node)
 #define INFO_STATE(n) ((n)->state)
+#define INFO_ISFOR(n) ((n)->isFor)
 
 #define RENAME_STR_SIZE 20
 
@@ -44,6 +46,7 @@ static info *MakeInfo(void)
 
   INFO_ROOT_NODE( result) = NULL;
   INFO_STATE( result) = 0;
+  INFO_ISFOR( result) = 0;
 
   DBUG_RETURN( result);
 }
@@ -232,6 +235,7 @@ node *SYMparam( node *arg_node, info * arg_info)
 node *SYMfunbody( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMfunbody");
+  INFO_ISFOR(arg_info) = 0;
 
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
@@ -243,44 +247,45 @@ node *SYMfunbody( node *arg_node, info * arg_info)
 //rename and put in the right symbol table
 node *SYMvardec( node *arg_node, info * arg_info)
 {
-  DBUG_ENTER("SYMvardec");
+	DBUG_ENTER("SYMvardec");
 
-  char *name;
-  char buffer[RENAME_STR_SIZE];
+	char *name;
+	char buffer[RENAME_STR_SIZE];
 
-  node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), STRcpy(VARDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
+	node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), STRcpy(VARDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+	snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-  name = STRcpy(SYMBOL_NAME( symbol));
-  SYMBOL_NAME( symbol) = STRcat(buffer , name);
-  VARDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
+	name = STRcpy(SYMBOL_NAME( symbol));
+	SYMBOL_NAME( symbol) = STRcat(buffer , name);
+	VARDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
 
 
   //put symbol in right symbol table, check root node type first. 
-   if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
-     if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
-      FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-      else{
-      SYMBOL_NEXT(symbol) = FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
-      FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
+   
+	if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+	FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+	}
+	else{
+	SYMBOL_NEXT(symbol) = FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
+	FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+	}
 
-  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info))== 16){
-     if(FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
-      FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-      else{
-      SYMBOL_NEXT(symbol) = FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
-      FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-    }
-  }
 
-  //keep traversing
-  VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
+	// else if(NODE_TYPE(INFO_ROOT_NODE(arg_info))== 17){
+	//    if(FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+	//     FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+	//   }
+	//     else{
+	//     SYMBOL_NEXT(symbol) = FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
+	//     FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+	//   }
+	// }
 
-  MEMfree(name); 
-  DBUG_RETURN(arg_node);
+	//keep traversing
+	VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
+
+	MEMfree(name); 
+	DBUG_RETURN(arg_node);
 }
 
 //traverse over fundefs
@@ -308,22 +313,30 @@ node *SYMstmts( node *arg_node, info * arg_info)
 //put loopvar in symbol table. 
 node *SYMfor( node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("SYMfor");  
+	DBUG_ENTER("SYMfor");  
 
-  node *symbol = TBmakeSymbol(T_int, FOR_LOOPVAR( arg_node), INFO_STATE(arg_info), NULL);
-  node *tmp = INFO_ROOT_NODE(arg_info);
+	// node *symbol = TBmakeSymbol(T_int, FOR_LOOPVAR( arg_node), INFO_STATE(arg_info), NULL);
+	// node *tmp = INFO_ROOT_NODE(arg_info);
 
-  FOR_SYMBOLTABLE(arg_node) = symbol;
-  INFO_ROOT_NODE(arg_info) = arg_node;
+	// FOR_SYMBOLTABLE(arg_node) = symbol;
+	// INFO_ROOT_NODE(arg_info) = arg_node;
 
-  INFO_STATE(arg_info) = INFO_STATE(arg_info)+1;
+	INFO_ISFOR(arg_info) = 1;
+	FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 
-  FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+	INFO_STATE(arg_info) = INFO_STATE(arg_info)+1;		
 
-  INFO_ROOT_NODE(arg_info) = tmp;
-  INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
 
-  DBUG_RETURN(arg_node);
+
+	if(FOR_BLOCK(arg_node) != NULL){
+		FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+	} else if (FOR_BLOCKSINGLE(arg_node) != NULL){
+		FOR_BLOCKSINGLE(arg_node) = TRAVdo(FOR_BLOCKSINGLE(arg_node), arg_info);
+	}
+
+	INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
+
+	DBUG_RETURN(arg_node);
 }
 
 /*

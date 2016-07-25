@@ -27,11 +27,13 @@
  */
 struct INFO {
   bool firsterror;
+  int isFor;
   int count;
 };
 
 #define INFO_FIRSTERROR(n) ((n)->firsterror)
 #define INFO_COUNT(n) ((n)->count)
+#define INFO_ISFOR(n) ((n)->isFor)
 
 
 static info *MakeInfo()
@@ -40,8 +42,7 @@ static info *MakeInfo()
 
   result = MEMmalloc(sizeof(info));
   INFO_COUNT( result) = 0;
-
-    
+  INFO_ISFOR( result) = 0;    
 
   INFO_FIRSTERROR(result) = FALSE;
   
@@ -333,6 +334,7 @@ node *
 PRTfunbody (node * arg_node, info * arg_info)
 {
   DBUG_ENTER("PRTfunbody");
+  INFO_ISFOR(arg_info) = 0;
   FUNBODY_VARDEC( arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node) = TRAVopt( FUNBODY_STATEMENT( arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node) = TRAVopt( FUNBODY_LOCALFUNDEFS( arg_node), arg_info);
@@ -526,7 +528,10 @@ node *
 PRTvardec (node * arg_node, info * arg_info)
 {
 
-  printf("%*s", INFO_COUNT(arg_info)*4, " ");
+  if (INFO_ISFOR(arg_info) == 0){
+      printf("%*s", INFO_COUNT(arg_info)*4, " ");
+  }
+
   char *tmp;
   DBUG_ENTER ("PRTpvardec");
   switch(VARDEC_TYPE( arg_node)){
@@ -557,14 +562,16 @@ PRTvardec (node * arg_node, info * arg_info)
     VARDEC_INIT(arg_node) = TRAVopt(VARDEC_INIT(arg_node), arg_info);
   } 
   
-  printf(";");
+  if (INFO_ISFOR(arg_info) == 0){
+      printf(";");
 
-  if(VARDEC_NEXT( arg_node) != NULL){
-    printf("\n");
-    VARDEC_NEXT( arg_node) = TRAVopt(VARDEC_NEXT(arg_node), arg_info);
-  }
-  else {
-    printf("\n");
+    if(VARDEC_NEXT( arg_node) != NULL){
+      printf("\n");
+      VARDEC_NEXT( arg_node) = TRAVopt(VARDEC_NEXT(arg_node), arg_info);
+    }
+    else {
+      printf("\n");
+    }
   }
 
   
@@ -717,11 +724,13 @@ node *
 PRTfor(node * arg_node, info * arg_info)
 {
   DBUG_ENTER ("PRTfor");
+  printf("\n");
   printf("%*s", INFO_COUNT(arg_info)*4, " ");
 
 
-  printf("for( int %s = ", FOR_LOOPVAR( arg_node));
-  
+  printf("for(");
+
+  INFO_ISFOR( arg_info) = 1;
   FOR_START( arg_node) = TRAVdo( FOR_START(arg_node), arg_info);
 
   printf(", ");
@@ -734,8 +743,14 @@ PRTfor(node * arg_node, info * arg_info)
   }
   printf(") {\n");
   INFO_COUNT(arg_info) = INFO_COUNT(arg_info)+1;
-  FOR_BLOCK( arg_node) = TRAVdo( FOR_BLOCK( arg_node), arg_info);
-  INFO_COUNT(arg_info) = INFO_COUNT(arg_info)+1;
+
+  if(FOR_BLOCK(arg_node) != NULL){
+    FOR_BLOCK( arg_node) = TRAVdo( FOR_BLOCK( arg_node), arg_info);  
+  } else if(FOR_BLOCKSINGLE(arg_node) != NULL){
+    FOR_BLOCKSINGLE( arg_node) = TRAVdo( FOR_BLOCKSINGLE( arg_node), arg_info); 
+  }
+
+  INFO_COUNT(arg_info) = INFO_COUNT(arg_info)-1;
 
   printf("\n");
   printf("%*s", INFO_COUNT(arg_info)*4, " ");
@@ -885,7 +900,6 @@ PRTstmts (node * arg_node, info * arg_info)
   
   DBUG_RETURN (arg_node);
 }
-
 
 /** <!--******************************************************************-->
  *

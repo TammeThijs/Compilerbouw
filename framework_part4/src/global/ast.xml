@@ -129,7 +129,7 @@
       <node name="ConditionExpr"/>
     </target>
   </nodeset>
-  <nodeset name="Stmt">
+  <nodeset name="Stmtset">
     <target>
       <node name="Assign" />
       <node name="Exprstmt" />
@@ -842,7 +842,7 @@
     <son name="Start">
       <targets>
         <target mandatory="yes">
-          <set name="Expr" />
+          <node name="VarDec" />
           <phases>
             <all />
           </phases>
@@ -871,7 +871,7 @@
     </son>
     <son name="Block">
       <targets>
-        <target mandatory="yes">
+        <target mandatory="no">
           <node name="Stmts" />
           <phases>
             <all />
@@ -879,16 +879,16 @@
         </target>
       </targets>
     </son>
-    <son name="SymbolTable">
-        <targets>
-          <target mandatory="no">
-            <node name="Symbol" />
-            <phases>
-              <all />
-            </phases>
-          </target>
-        </targets>
-      </son>
+    <son name="BlockSingle">
+      <targets>
+        <target mandatory="yes">
+          <set name="Stmtset" />
+          <phases>
+            <all />
+          </phases>
+        </target>
+      </targets>
+    </son>
   </sons>
   <attributes>
     <attribute name="LoopVar">
@@ -1021,13 +1021,12 @@
 <!--
  Node Stmts:
 -->
-
 <node name="Stmts">
   <sons>
     <son name="Stmt">
       <targets>
         <target mandatory="yes">
-          <set name="Stmt" />
+          <set name="Stmtset" />
           <phases>
             <all />
           </phases>
@@ -1047,7 +1046,6 @@
   </sons>
   <attributes />
 </node>
-
 
 <!--
  Node Assign:

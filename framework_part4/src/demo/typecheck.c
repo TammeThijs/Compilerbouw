@@ -100,6 +100,7 @@ node *CTfuncall(node *arg_node, info *arg_info){
 
 node *CTfor(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfor");
+
 	FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
 	if (INFO_TYPE(arg_info) != T_int){
 		CTIerrorLine(NODE_LINE(arg_node), "Start type does not match int");
@@ -114,8 +115,15 @@ node *CTfor(node *arg_node, info *arg_info){
 			CTIerrorLine(NODE_LINE(arg_node), "Step type does not match int");
 		}
 	}
-	FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
-	DBUG_RETURN(arg_node);
+
+	if(FOR_BLOCK(arg_node) != NULL){
+		FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+	} else if (FOR_BLOCKSINGLE(arg_node) != NULL){
+  		FOR_BLOCKSINGLE(arg_node) = TRAVdo(FOR_BLOCKSINGLE(arg_node), arg_info);
+  	}
+
+  	DBUG_RETURN(arg_node);
+
 }
 
 //set info_type to type of varlet
@@ -318,7 +326,6 @@ node *CTnum(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTNum");
 
 	INFO_TYPE(arg_info) = T_int;
-
 	DBUG_RETURN(arg_node);
 }
 

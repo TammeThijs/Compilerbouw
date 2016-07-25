@@ -1,0 +1,5 @@
+- Node For symboltable kan weg (Done)
+- For Node kan alleen stmts en geen stmt, fout gevoelig wanneer er geen curly brackets worden gegeven. (Done)
+- FOR_START omzetten naar Vardec (Done)
+- Expr kan geen funcall zonder parameters ,ookal klopt dit wel! exprstmt(TODO)
+- Klopt helemaal niets van syntax table 'depth level' (TODO)

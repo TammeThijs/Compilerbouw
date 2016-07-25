@@ -1,0 +1,13 @@
+__init:
+
+testfunctie:
+   floadc 0
+   fstore 0
+   floadc 1
+   fstore 1
+   floadc 2
+   fstore 2
+
+.const float  5.500000
+.const float  1.100000
+.const float  3.300000
