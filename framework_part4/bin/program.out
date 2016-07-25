@@ -1,19 +1,18 @@
-main:
-esr 2
-iloadc_0
-istore 0
-iloadc_1
-istore 1
-1_dowhile:
-iload_0
-iload_1
-iadd
-istore 0
-iload_0
-iloadc 0
-ilt
-branch_t 1_dowhile
-iloadc_0
-ireturn
+__init:
 
-.const int  10
+main:
+   esr 2
+   iloadc_0
+   istore 0
+   iloadc_1
+   istore 1
+   isrg
+   jsr 0 one
+   istore 0
+   iloadc_0
+   ireturn
+
+one:
+   iloadc_1
+   ireturn
+

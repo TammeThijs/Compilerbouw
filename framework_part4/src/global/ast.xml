@@ -95,6 +95,7 @@
             <node name="Bool" />
             <node name="VarDec" />
             <node name="Return" />
+            <node name="For" />
           </travuser>
         </traversal>
 

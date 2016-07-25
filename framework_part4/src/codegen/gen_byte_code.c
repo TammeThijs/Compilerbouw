@@ -25,6 +25,7 @@ struct INFO {
 	int varcount;
 	int constantcount;
 	node *consts [50];
+	int scope;
 };
 
 #define INFO_CODE(n) ((n)->code)
@@ -32,6 +33,7 @@ struct INFO {
 #define INFO_VARCOUNT(n) ((n)->varcount)
 #define INFO_CONSTCOUNT(n) ((n)->constantcount)
 #define INFO_CONSTS(n) ((n)->consts)
+#define INFO_SCOPE(n) ((n)->scope)
 
 static info *MakeInfo(void)
 {
@@ -44,6 +46,7 @@ static info *MakeInfo(void)
 	INFO_BRANCHCOUNT(result) = 0;
 	INFO_VARCOUNT(result) = 0;
 	INFO_CONSTCOUNT(result) = 0;
+	INFO_SCOPE(result) = 0;
 	DBUG_RETURN( result);
 }
 
@@ -104,12 +107,25 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		fputs("main:\n", INFO_CODE(arg_info));
 		char buffer[20];
 		sprintf(buffer, "%d", locals);
-		char *command = STRcatn(3, "esr ", buffer, "\n");
+		char *command = STRcatn(3, "   esr ", buffer, "\n");
+		fputs(command, INFO_CODE(arg_info));
+		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
+		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
+		fputs("\n", INFO_CODE(arg_info));
+
+		
+	}
+	//if it is not main: also make code.
+	else{
+		printf("fundef buiten main");
+		char *command = STRcat(FUNDEF_NAME(arg_node), ":\n");
 		fputs(command, INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 		fputs("\n", INFO_CODE(arg_info));
+	}
 
-		//write constants
+	//write constants
 		for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
 			if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
 				char buffer[20];
@@ -124,7 +140,6 @@ node *GBCfundef(node *arg_node, info *arg_info){
 				fputs(command, INFO_CODE(arg_info));
 			}
 		}
-	}
 	DBUG_RETURN(arg_node);
 }
 
@@ -205,7 +220,40 @@ node *GBCarrexpr( node *arg_node, info *arg_info){
 
 node *GBCfuncall( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfuncall");
+	printf("in de funcall\n");
+	int scopefuncall = FSYMBOL_SCOPE(FUNCALL_DECL(arg_node));
+	char buffer[20];
+	if(scopefuncall == 0){
+		fputs("   isrg\n", INFO_CODE(arg_info));
+	}
+	else if(scopefuncall== INFO_SCOPE(arg_info) + 1){
+		fputs("   isrl\n", INFO_CODE(arg_info));
+	}
+	else if(scopefuncall == INFO_SCOPE(arg_info)){
+		fputs("   isr\n", INFO_CODE(arg_info));
+	}
+	else{
+		sprintf(buffer, "%d", scopefuncall);
+		char *command = STRcatn(3,"  isrn ", buffer, "\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
+	printf("na de isr\n");
 	FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
+	int amountargs = 0;
+	node * arg;
+	if(FUNCALL_ARGS(arg_node)!= NULL){
+		amountargs = 1;
+		arg = FUNCALL_ARGS(arg_node);
+		while(EXPRS_NEXT(arg) != NULL){
+			arg = EXPRS_NEXT(arg);
+			amountargs ++;
+		}
+	}
+	
+	sprintf(buffer, "%d", amountargs);
+	char *command = STRcatn(5, "   jsr ", buffer, " ", FSYMBOL_NAME(FUNCALL_DECL(arg_node)), "\n");
+	fputs(command, INFO_CODE(arg_info));
+	printf("na de jsr");
 	DBUG_RETURN(arg_node);
 }
 
@@ -227,46 +275,46 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	}
 	//check which operand you have to write down
 	if(BINOP_OP(arg_node) == BO_add){
-		char *ass = STRcat(type, "add\n");
+		char *ass = STRcatn(3, "   ", type, "add\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_mul){
-		char *ass = STRcat(type, "mul\n");
+		char *ass = STRcatn(3, "   ", type, "mul\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_sub){
-		char *ass = STRcat(type, "sub\n");
+		char *ass = STRcatn(3, "   ", type, "sub\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_div){
-		char *ass = STRcat(type, "div\n");
+		char *ass = STRcatn(3, "   ", type, "div\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_mod){
-		fputs("irem\n", INFO_CODE(arg_info));
+		fputs("   irem\n", INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_lt){
-		char *ass = STRcat(type, "lt\n");
+		char *ass = STRcatn(3, "   ", type, "lt\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_le){
-		char *ass = STRcat(type, "le\n");
+		char *ass = STRcatn(3, "   ", type, "le\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_gt){
-		char *ass = STRcat(type, "gt\n");
+		char *ass = STRcatn(3, "   ", type, "gt\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_ge){
-		char *ass = STRcat(type, "ge\n");
+		char *ass = STRcatn(3, "   ", type, "ge\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_eq){
-		char *ass = STRcat(type, "eq\n");
+		char *ass = STRcatn(3, "   ", type, "eq\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	else if(BINOP_OP(arg_node) == BO_ne){
-		char *ass = STRcat(type, "ne\n");
+		char *ass = STRcatn(3, "   ", type, "ne\n");
 		fputs(ass, INFO_CODE(arg_info));
 	}
 	DBUG_RETURN(arg_node);
@@ -277,14 +325,14 @@ node *GBCmonop( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGmonop");
 	MONOP_OPERAND(arg_node) = TRAVdo(MONOP_OPERAND(arg_node), arg_info);
 	if(MONOP_OP(arg_node) == MO_not){
-		fputs("bnot\n", INFO_CODE(arg_info));
+		fputs("   bnot\n", INFO_CODE(arg_info));
 	}
 	else{
 		if(MONOP_OPTYPE(arg_node) == T_int){
-			fputs("ineg\n", INFO_CODE(arg_info));
+			fputs("   ineg\n", INFO_CODE(arg_info));
 		}
 		else{
-			fputs("fneg\n", INFO_CODE(arg_info));
+			fputs("   fneg\n", INFO_CODE(arg_info));
 		}
 	}
 	DBUG_RETURN(arg_node);
@@ -310,25 +358,25 @@ node *GBCvar( node *arg_node, info *arg_info){
 			type = "b";
 		}
 		if(SYMBOL_STATE(VAR_DECL(arg_node)) == 0){
-			char *string = STRcat(type,"load_0\n");
+			char *string = STRcatn(3, "   ", type,"load_0\n");
 			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 1){
-			char *string = STRcat(type,"load_1\n");
+			char *string = STRcatn(3, "   ", type,"load_1\n");
 			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 2){
-			char *string = STRcat(type,"load_2\n");
+			char *string = STRcatn(3, "   ", type,"load_2\n");
 			fputs(string, INFO_CODE(arg_info));
 		}
 		else if (SYMBOL_STATE(VAR_DECL(arg_node)) == 3){
-			char *string = STRcat(type,"load_3\n");
+			char *string = STRcatn(3, "   ", type,"load_3\n");
 			fputs(string, INFO_CODE(arg_info));
 		}
 		else{
 			char buffer[1];
 			sprintf(buffer, "%d", place);
-			char *string = STRcat(type,"load ");
+			char *string = STRcatn(3, "   ", type,"load ");
 			char *command = STRcatn(3, string, buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
@@ -364,7 +412,7 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	
 	char buffer[1];
 	sprintf(buffer, "%d", place);
-	char *string = STRcat(type, "store ");
+	char *string = STRcatn(3, "   ", type, "store ");
 	char *command = STRcatn(3, string, buffer, "\n");
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
@@ -373,21 +421,20 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 //write code return
 node *GBCreturn( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCreturn");
-	printf("in de return");
 	if(RETURN_TYPE(arg_node) == T_int){
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
-		fputs("ireturn\n", INFO_CODE(arg_info));
+		fputs("   ireturn\n", INFO_CODE(arg_info));
 	}
 	else if(RETURN_TYPE(arg_node) == T_float){
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
-		fputs("freturn\n", INFO_CODE(arg_info));
+		fputs("   freturn\n", INFO_CODE(arg_info));
 	}
 	else if(RETURN_TYPE(arg_node) == T_boolean){
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
-		fputs("breturn\n", INFO_CODE(arg_info));
+		fputs("   breturn\n", INFO_CODE(arg_info));
 	}
 	else{
-		fputs("return\n", INFO_CODE(arg_info));
+		fputs("   return\n", INFO_CODE(arg_info));
 	}
 	DBUG_RETURN(arg_node);
 }
@@ -399,12 +446,12 @@ node *GBCconditionexpr( node *arg_node, info *arg_info){
 	char *command;
 	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
 	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
-	command = STRcatn(3,"branch_f ", buffer, "_false_expr\n");
+	command = STRcatn(3,"   branch_f ", buffer, "_false_expr\n");
 	fputs(command, INFO_CODE(arg_info));
 	CONDITIONEXPR_ELSE(arg_node) = TRAVdo(CONDITIONEXPR_ELSE(arg_node), arg_info);
 	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
 	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
-	command = STRcatn(3,"jump ", buffer, "_end\n");
+	command = STRcatn(3,"   jump ", buffer, "_end\n");
 	fputs(command, INFO_CODE(arg_info));
 	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info)-1);
 	command = STRcat(buffer, "_false_expr:\n");
@@ -430,12 +477,12 @@ node *GBCif( node *arg_node, info *arg_info){
 	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
 	if(IF_ELSEBLOCK(arg_node) != NULL){
 		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
-		command = STRcatn(3,"branch_f ", buffer, "_else\n");
+		command = STRcatn(3,"   branch_f ", buffer, "_else\n");
 		fputs(command, INFO_CODE(arg_info));
 		IF_IFBLOCK(arg_node) = TRAVdo(IF_IFBLOCK(arg_node), arg_info);
 		INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
 		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
-		command = STRcatn(3,"jump ", buffer, "_end\n");
+		command = STRcatn(3,"   jump ", buffer, "_end\n");
 		fputs(command, INFO_CODE(arg_info));
 		command = STRcat(buffer, "_else:\n");
 		fputs(command, INFO_CODE(arg_info));
@@ -460,10 +507,10 @@ node *GBCwhile( node *arg_node, info *arg_info){
 	WHILE_CONDITION(arg_node) = TRAVdo(WHILE_CONDITION(arg_node), arg_info);
 	INFO_BRANCHCOUNT(arg_info) = INFO_BRANCHCOUNT(arg_info) + 1;
 	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
-	command = STRcatn(3, "branch_f ", buffer, "_end\n");
+	command = STRcatn(3, "   branch_f ", buffer, "_end\n");
 	fputs(command, INFO_CODE(arg_info));
 	WHILE_BLOCK(arg_node) = TRAVdo(WHILE_BLOCK(arg_node), arg_info);
-	command = STRcatn(3,"jump ", commandwhile, "\n");
+	command = STRcatn(3,"   jump ", commandwhile, "\n");
 	fputs(command, INFO_CODE(arg_info));
 	command = STRcat(buffer, "_end: \n");
 	fputs(command, INFO_CODE(arg_info));
@@ -480,37 +527,54 @@ node *GBCdowhile( node *arg_node, info *arg_info){
 	fputs(command, INFO_CODE(arg_info));
 	DOWHILE_BLOCK(arg_node) = TRAVdo(DOWHILE_BLOCK(arg_node), arg_info);
 	DOWHILE_CONDITION(arg_node) = TRAVdo(DOWHILE_CONDITION(arg_node), arg_info);
-	command = STRcatn(3, "branch_t ", commandwhile, "\n");
+	command = STRcatn(3, "   branch_t ", commandwhile, "\n");
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
 
 node *GBCfor( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfor");
+	int start = 0;
+	int stop = 1;
+	int step = 1;
+	if(NODE_TYPE(FOR_START(arg_node)) == 30){
+		start = NUM_VALUE(FOR_START(arg_node));
+	}
+	if(NODE_TYPE(FOR_STOP(arg_node)) == 30){
+		stop = NUM_VALUE(FOR_STOP(arg_node));
+	}
+	if(FOR_STEP(arg_node) != NULL && NODE_TYPE(FOR_STEP(arg_node)) == 30){
+		step = NUM_VALUE(FOR_STEP(arg_node));
+	}
+	for(int i = start; i< stop; i = i + step){
+		FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+	}
+
+	
 	DBUG_RETURN(arg_node);
 }
 //write load for constant
 node *GBCnum( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCnum");
 	if(NUM_VALUE(arg_node) == 0){
-		fputs("iloadc_0\n", INFO_CODE(arg_info));
+		fputs("   iloadc_0\n", INFO_CODE(arg_info));
 	}
 	else if (NUM_VALUE(arg_node) == 1){
-		fputs("iloadc_1\n", INFO_CODE(arg_info));
+		fputs("   iloadc_1\n", INFO_CODE(arg_info));
 	}
 	else if (NUM_VALUE(arg_node) == -1){
-		fputs("iloadc_m1\n", INFO_CODE(arg_info));
+		fputs("   iloadc_m1\n", INFO_CODE(arg_info));
 	}
 	else {
 		if(INFO_CONSTCOUNT(arg_info) == 0){
-			fputs("iloadc 0\n", INFO_CODE(arg_info));
+			fputs("   iloadc 0\n", INFO_CODE(arg_info));
 			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
 			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
 		}
 		else{
 			char buffer[1];
 			sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
-			char *command  = STRcatn(3,"iloadc ", buffer, "\n");
+			char *command  = STRcatn(3,"   iloadc ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
 			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
@@ -523,21 +587,21 @@ node *GBCnum( node *arg_node, info *arg_info){
 node *GBCfloat( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGfloat");
 	if(FLOAT_VALUE(arg_node) == 0.0){
-		fputs("floadc_0\n", INFO_CODE(arg_info));
+		fputs("   floadc_0\n", INFO_CODE(arg_info));
 	}
 	else if (FLOAT_VALUE(arg_node) == 1.0){
-		fputs("floadc_1\n", INFO_CODE(arg_info));
+		fputs("   floadc_1\n", INFO_CODE(arg_info));
 	}
 	else {
 		if(INFO_CONSTCOUNT(arg_info) == 0){
-			fputs("floadc 0\n", INFO_CODE(arg_info));
+			fputs("   floadc 0\n", INFO_CODE(arg_info));
 			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
 			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
 		}
 		else{
 			char buffer[1];
 			sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
-			char *command  = STRcatn(3,"floadc ", buffer, "\n");
+			char *command  = STRcatn(3,"   floadc ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
 			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
@@ -550,10 +614,10 @@ node *GBCfloat( node *arg_node, info *arg_info){
 node *GBCbool( node *arg_node, info *arg_info){
 	DBUG_ENTER("DBGbool");
 	if(BOOL_VALUE(arg_node) == 0){
-		fputs("bloadc_f\n", INFO_CODE(arg_info));
+		fputs("   bloadc_f\n", INFO_CODE(arg_info));
 	}
 	else {
-		fputs("bloadc_t\n", INFO_CODE(arg_info));
+		fputs("   bloadc_t\n", INFO_CODE(arg_info));
 	}
 	DBUG_RETURN(arg_node);
 }
