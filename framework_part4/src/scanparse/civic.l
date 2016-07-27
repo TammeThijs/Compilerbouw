@@ -30,6 +30,9 @@
 %option nounput
 
 
+
+
+
 %%
 
 "("                        { FILTER( BRACKET_L); }
@@ -91,5 +94,10 @@
                            }
 
 [ \t]                      { global.col += yyleng;
-                           } 
+                           }
+\/\/.*                      {/* single comment */}
+\/\*([^*]|\*+[^*/])*\*\/   {/* multi comment */}
 %%
+
+
+
