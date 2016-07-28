@@ -46,7 +46,7 @@ static info *MakeInfo(void)
 	INFO_BRANCHCOUNT(result) = 0;
 	INFO_VARCOUNT(result) = 0;
 	INFO_CONSTCOUNT(result) = 0;
-	INFO_SCOPE(result) = 0;
+	INFO_SCOPE(result) = -1;
 	DBUG_RETURN( result);
 }
 
@@ -93,13 +93,26 @@ node *GBCfundefs(node *arg_node, info *arg_info){
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
 	char *main_name = "main";
+	char *init_name = "__init";
 	int locals  = 0;
 	if(FUNDEF_SYMBOLTABLE(arg_node)!= NULL){
 		locals = 1;
-		node * symbol = FUNDEF_SYMBOLTABLE(arg_node);
+		node *symbol = FUNDEF_SYMBOLTABLE(arg_node);
 		while(SYMBOL_NEXT(symbol) != NULL){
 			locals = locals + 1;
 			symbol = SYMBOL_NEXT(symbol);
+		}
+	}
+	if(FUNDEF_FSYMBOLTABLE(arg_node) != NULL){
+		node *fsymbol = FUNDEF_FSYMBOLTABLE(arg_node);
+		char *newname = STRcatn(4, "_", FUNDEF_NAME(arg_node), "_", FSYMBOL_NAME(fsymbol));
+		FSYMBOL_NAME(fsymbol) = newname;
+		FUNDEF_NAME(FSYMBOL_FUNCTION(fsymbol)) = newname;
+		while(FSYMBOL_NEXT(fsymbol) != NULL){
+			fsymbol = FSYMBOL_NEXT(fsymbol);
+			newname = STRcatn(4, "_", FUNDEF_NAME(arg_node), "_", FSYMBOL_NAME(fsymbol));
+			FSYMBOL_NAME(fsymbol) = newname;
+			FUNDEF_NAME(FSYMBOL_FUNCTION(fsymbol)) = newname;
 		}
 	}
 	//check if it is main
@@ -112,34 +125,33 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
-		fputs("\n", INFO_CODE(arg_info));
 
 		
 	}
 	//if it is not main: also make code.
-	else{
-		printf("fundef buiten main");
+	else if(! STReq(FUNDEF_NAME(arg_node), init_name)) {
 		char *command = STRcat(FUNDEF_NAME(arg_node), ":\n");
 		fputs(command, INFO_CODE(arg_info));
+		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
-		fputs("\n", INFO_CODE(arg_info));
+		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
 	}
 
 	//write constants
-		for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
-			if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
-				char buffer[20];
-				sprintf(buffer, "%d", NUM_VALUE(INFO_CONSTS(arg_info)[i]));
-				char *command = STRcatn(3, ".const int  ", buffer, "\n");
-				fputs(command, INFO_CODE(arg_info));
-			}
-			else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 31){
-				char buffer[20];
-				sprintf(buffer, "%f", FLOAT_VALUE(INFO_CONSTS(arg_info)[i]));
-				char *command = STRcatn(3, ".const float  ", buffer, "\n");
-				fputs(command, INFO_CODE(arg_info));
-			}
+	for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
+		if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
+			char buffer[20];
+			sprintf(buffer, "%d", NUM_VALUE(INFO_CONSTS(arg_info)[i]));
+			char *command = STRcatn(3, ".const int  ", buffer, "\n");
+			fputs(command, INFO_CODE(arg_info));
 		}
+		else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 31){
+			char buffer[20];
+			sprintf(buffer, "%f", FLOAT_VALUE(INFO_CONSTS(arg_info)[i]));
+			char *command = STRcatn(3, ".const float  ", buffer, "\n");
+			fputs(command, INFO_CODE(arg_info));
+		}
+	}
 	DBUG_RETURN(arg_node);
 }
 
@@ -165,8 +177,10 @@ node *GBCids( node *arg_node, info *arg_info){
 node *GBCfunbody( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfunbody");
 	FUNBODY_VARDEC(arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
-	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 	FUNBODY_STATEMENT(arg_node) = TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
+	INFO_VARCOUNT(arg_info) = 0;
+	fputs("\n", INFO_CODE(arg_info));
+	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
@@ -220,9 +234,9 @@ node *GBCarrexpr( node *arg_node, info *arg_info){
 
 node *GBCfuncall( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfuncall");
-	printf("in de funcall\n");
 	int scopefuncall = FSYMBOL_SCOPE(FUNCALL_DECL(arg_node));
 	char buffer[20];
+	char *command;
 	if(scopefuncall == 0){
 		fputs("   isrg\n", INFO_CODE(arg_info));
 	}
@@ -234,10 +248,9 @@ node *GBCfuncall( node *arg_node, info *arg_info){
 	}
 	else{
 		sprintf(buffer, "%d", scopefuncall);
-		char *command = STRcatn(3,"  isrn ", buffer, "\n");
+		char *command = STRcatn(3,"   isrn ", buffer, "\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
-	printf("na de isr\n");
 	FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
 	int amountargs = 0;
 	node * arg;
@@ -251,9 +264,10 @@ node *GBCfuncall( node *arg_node, info *arg_info){
 	}
 	
 	sprintf(buffer, "%d", amountargs);
-	char *command = STRcatn(5, "   jsr ", buffer, " ", FSYMBOL_NAME(FUNCALL_DECL(arg_node)), "\n");
+
+	command = STRcatn(5, "   jsr ", buffer, " ", FSYMBOL_NAME(FUNCALL_DECL(arg_node)), "\n");
+
 	fputs(command, INFO_CODE(arg_info));
-	printf("na de jsr");
 	DBUG_RETURN(arg_node);
 }
 
@@ -537,8 +551,8 @@ node *GBCfor( node *arg_node, info *arg_info){
 	int start = 0;
 	int stop = 1;
 	int step = 1;
-	if(NODE_TYPE(FOR_START(arg_node)) == 30){
-		start = NUM_VALUE(FOR_START(arg_node));
+	if(NODE_TYPE(VARDEC_INIT(FOR_START(arg_node))) == 30){
+		start = NUM_VALUE(VARDEC_INIT(FOR_START(arg_node)));
 	}
 	if(NODE_TYPE(FOR_STOP(arg_node)) == 30){
 		stop = NUM_VALUE(FOR_STOP(arg_node));
@@ -547,7 +561,8 @@ node *GBCfor( node *arg_node, info *arg_info){
 		step = NUM_VALUE(FOR_STEP(arg_node));
 	}
 	for(int i = start; i< stop; i = i + step){
-		FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
+		FOR_BLOCK(arg_node) = TRAVopt(FOR_BLOCK(arg_node), arg_info);
+		FOR_BLOCK(arg_node) = TRAVopt(FOR_BLOCKSINGLE(arg_node), arg_info);
 	}
 
 	

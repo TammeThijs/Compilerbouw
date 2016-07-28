@@ -179,8 +179,6 @@ node *LINKvarlet(node *arg_node, info *arg_info){
   //search through stack
   while(!found && scope >= 0){
 
-    printf("VARLET NAME: %s - SYMBOL NAME: SCOPE: %d\n",VARLET_NAME(arg_node), scope);
-
     while(symbol == NULL && scope>0){
       scope--;
       symbol = INFO_STACK(arg_info)[scope];
@@ -195,7 +193,6 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         VARLET_DECL(arg_node) = symbol; 
         VARLET_NAME(arg_node) = SYMBOL_NAME(symbol); 
         found = true;
-      printf("GEVONDEN\n");
         SYMBOL_STATE(symbol) = -1;     
       }
       else{

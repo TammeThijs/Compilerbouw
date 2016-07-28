@@ -1,14 +1,23 @@
-__init:
+main:
+   esr 2
+   iloadc_0
+   istore 0
+   iloadc_1
+   istore 1
+   isrg
+   iload_1
+   jsr 1 one
+   istore 0
+   iloadc_0
+   ireturn
 
-testfunctie:
-   floadc 0
-   fneg
-   fstore 0
-   floadc 1
-   fstore 1
-   iloadc 2
-   istore 2
+one:
+   isrl
+   iload_0
+   jsr 1 _one_two
+   ireturn
 
-.const float  3.500000
-.const float  2.000000
-.const int  3
+_one_two:
+   iload_0
+   ireturn
+

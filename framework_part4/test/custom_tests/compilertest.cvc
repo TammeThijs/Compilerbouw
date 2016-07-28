@@ -2,10 +2,13 @@
 int main(){
 	int x = 0;
 	int y = 1;
-	x = one();
+	x = one(y);
 	return 0;
 }
 
-int one(){
-	return 1;
+int one(int a){
+	int two(int b){
+		return b;
+	}
+	return two(a);
 }
