@@ -87,6 +87,7 @@
             <node name="Assign"/>
             <node name="VarLet" />
             <node name="BinOp" />
+            <node name="FunBody" />
             <node name="MonOp" />
             <node name="Cast" />
             <node name="Var" />

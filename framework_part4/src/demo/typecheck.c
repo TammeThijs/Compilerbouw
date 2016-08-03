@@ -16,10 +16,13 @@
 
  struct INFO {
   int lastType;
+  int funReturnType;
+  int hasReturn;
 };
 
 #define INFO_TYPE(n)((n)->lastType)
-
+#define INFO_FUNTYPE(n)((n)->funReturnType)
+#define INFO_HASRETURN(n)((n)->hasReturn)
 
 static info *MakeInfo(void)
 {
@@ -30,6 +33,8 @@ static info *MakeInfo(void)
   result = (info *)MEMmalloc(sizeof(info));
 
   INFO_TYPE( result) = 0;
+  INFO_FUNTYPE( result) =0;
+  INFO_HASRETURN( result) =0;
 
 
   DBUG_RETURN( result);
@@ -87,14 +92,30 @@ node *CTfuncall(node *arg_node, info *arg_info){
 }
 
 	//check type of return of function against function type
-	node *CTfundef(node *arg_node, info *arg_info){
+node *CTfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfundef");
+	INFO_HASRETURN(arg_info) = 0;
+	INFO_FUNTYPE(arg_info) = 999;
 
 	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
-	if(INFO_TYPE(arg_info)!=FUNDEF_TYPE(arg_node) && FUNDEF_TYPE(arg_node) != T_unknown){
+
+	if(INFO_HASRETURN(arg_info) == 0){
+		printf("Heeft geen return\n");
+		INFO_FUNTYPE(arg_info) = T_unknown;
+	}
+	if(FUNDEF_TYPE(arg_node) != INFO_FUNTYPE(arg_info)){
 		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type fun: %d ret:  %d", FUNDEF_TYPE(arg_node), INFO_TYPE(arg_info));
 	}
 
+	DBUG_RETURN(arg_node);
+}
+
+node *CTfunbody(node *arg_node, info *arg_info){
+	DBUG_ENTER("CTfunbody");
+	printf("Zit in funbody\n");
+	FUNBODY_VARDEC(arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
+	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
+	FUNBODY_STATEMENT(arg_node) = TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
@@ -181,6 +202,8 @@ node *CTvar(node *arg_node, info *arg_info){
 //rewrite cast and set info_type to cast type
 node *CTcast(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTcast");
+extern node *CTbinop( node *arg_node, info *arg_info);
+extern node *CTfunbody( node *arg_node, info *arg_info);
 
 	CAST_EXPRESSION(arg_node) = TRAVdo(CAST_EXPRESSION(arg_node), arg_info);
 	type exprType = INFO_TYPE(arg_info);
@@ -309,13 +332,20 @@ node *CTmonop(node *arg_node, info *arg_info){
 node * CTreturn(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTreturn");
 
+	// confirm fun has return
+	INFO_HASRETURN(arg_info) = 1;
+	printf("INFO %d\n", INFO_HASRETURN(arg_info));
+
 	if(RETURN_EXPRESSION(arg_node) == NULL){
-		INFO_TYPE(arg_info) = T_unknown;
+		printf("No expression\n");
+		INFO_FUNTYPE(arg_info) = T_unknown;
 		RETURN_TYPE(arg_node) = T_unknown;
 	}
 	else{
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
+		printf("Has expression\n");
 		RETURN_TYPE(arg_node) = INFO_TYPE(arg_info);
+		INFO_FUNTYPE(arg_info) = INFO_TYPE(arg_info);
 	}
 
 	DBUG_RETURN(arg_node);

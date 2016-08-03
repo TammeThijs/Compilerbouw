@@ -1,23 +1,40 @@
-main:
-   esr 2
-   iloadc_0
+vardec:
+
+vardec_stat:
+   iloadc 0
    istore 0
+
+.const int  2
+vardec_ret:
+   iloadc 1
+   ireturn
+
+.const int  2
+.const int  2
+vardec_stat_ret:
+   iloadc 2
+   istore 0
+   iload_0
+   ireturn
+
+.const int  2
+.const int  2
+.const int  2
+stat_ret:
    iloadc_1
-   istore 1
-   isrg
-   iload_1
-   jsr 1 one
-   istore 0
-   iloadc_0
+   iloadc 3
    ireturn
 
-one:
-   isrl
-   iload_0
-   jsr 1 _one_two
+.const int  2
+.const int  2
+.const int  2
+.const int  2
+ret:
+   iloadc 4
    ireturn
 
-_one_two:
-   iload_0
-   ireturn
-
+.const int  2
+.const int  2
+.const int  2
+.const int  2
+.const int  2

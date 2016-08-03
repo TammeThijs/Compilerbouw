@@ -12,6 +12,7 @@ extern node *CTvardec( node *arg_node, info *arg_info);
 extern node *CTassign(node *arg_node, info *arg_info);
 extern node *CTcast( node *arg_node, info *arg_info);
 extern node *CTbinop( node *arg_node, info *arg_info);
+extern node *CTfunbody( node *arg_node, info *arg_info);
 extern node *CTmonop( node *arg_node, info *arg_info);
 extern node *CTreturn( node *arg_node, info *arg_info);
 extern node *CTnum(node *arg_node, info *arg_info);

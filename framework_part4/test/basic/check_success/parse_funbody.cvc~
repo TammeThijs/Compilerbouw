@@ -19,7 +19,7 @@ int vardec_stat_ret() {
 }
 
 int stat_ret() {
-    vardec(1);
+    vardec();
     return 2;
 }
 

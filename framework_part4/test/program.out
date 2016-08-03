@@ -1,6 +1,7 @@
-__init:
-
-f:
-   bloadc_t
-   breturn
+printInt:
+main:
+   esr 0
+   iload_0
+   iloadc_0
+   ireturn
 
