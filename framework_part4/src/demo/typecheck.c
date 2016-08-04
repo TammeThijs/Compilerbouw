@@ -100,19 +100,16 @@ node *CTfundef(node *arg_node, info *arg_info){
 	FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 
 	if(INFO_HASRETURN(arg_info) == 0){
-		printf("Heeft geen return\n");
 		INFO_FUNTYPE(arg_info) = T_unknown;
 	}
 	if(FUNDEF_TYPE(arg_node) != INFO_FUNTYPE(arg_info)){
 		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type fun: %d ret:  %d", FUNDEF_TYPE(arg_node), INFO_TYPE(arg_info));
 	}
-
 	DBUG_RETURN(arg_node);
 }
 
 node *CTfunbody(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTfunbody");
-	printf("Zit in funbody\n");
 	FUNBODY_VARDEC(arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
 	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 	FUNBODY_STATEMENT(arg_node) = TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
@@ -334,16 +331,13 @@ node * CTreturn(node *arg_node, info *arg_info){
 
 	// confirm fun has return
 	INFO_HASRETURN(arg_info) = 1;
-	printf("INFO %d\n", INFO_HASRETURN(arg_info));
 
 	if(RETURN_EXPRESSION(arg_node) == NULL){
-		printf("No expression\n");
 		INFO_FUNTYPE(arg_info) = T_unknown;
 		RETURN_TYPE(arg_node) = T_unknown;
 	}
 	else{
 		RETURN_EXPRESSION(arg_node) = TRAVdo(RETURN_EXPRESSION(arg_node), arg_info);
-		printf("Has expression\n");
 		RETURN_TYPE(arg_node) = INFO_TYPE(arg_info);
 		INFO_FUNTYPE(arg_info) = INFO_TYPE(arg_info);
 	}
@@ -354,7 +348,6 @@ node * CTreturn(node *arg_node, info *arg_info){
 //set info_type to int
 node *CTnum(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTNum");
-
 	INFO_TYPE(arg_info) = T_int;
 	DBUG_RETURN(arg_node);
 }
@@ -362,9 +355,7 @@ node *CTnum(node *arg_node, info *arg_info){
 //set info_type to boolean
 node *CTbool(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTBool");
-
 	INFO_TYPE(arg_info) = T_boolean;
-
 	DBUG_RETURN(arg_node);
 }
 
