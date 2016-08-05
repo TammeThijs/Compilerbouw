@@ -1,7 +1,6 @@
 printInt:
 main:
-   esr 0
-   iload_0
+   iloadg -1
    iloadc_0
    ireturn
 

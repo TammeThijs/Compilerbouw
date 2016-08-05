@@ -90,7 +90,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
     initbody = TBmakeFunbody(NULL, NULL, NULL);
-    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), NULL, initbody, NULL, NULL);
+    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), FALSE, FALSE, NULL, initbody, NULL, NULL);
     declarations = TBmakeDeclarations(fundef, arg_node);
 
     INFO_FUNBODY(arg_info) = initbody;
@@ -130,7 +130,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
       arg_info = enqueue(arg_info, assign);
   }
 
-  node *returnNode = TBmakeGlobaldef(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), GLOBALDEF_DIMS(arg_node), NULL);
+  node *returnNode = TBmakeGlobaldef(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), GLOBALDEF_EXPORT(arg_node), GLOBALDEF_DIMS(arg_node), NULL);
 
 
   DBUG_RETURN(returnNode);

@@ -105,25 +105,37 @@ globaldec: EXTERN type ID SEMICOLON
          }
          ;
 
-globaldef: EXPORT globaldef 
+globaldef: EXPORT type ID SEMICOLON 
          {
-            $$ = $2;
+            $$ = TBmakeGlobaldef( $2, $3, TRUE, NULL, NULL);
+         }
+         | EXPORT type ID LET expr SEMICOLON
+         {
+            $$ = TBmakeGlobaldef( $2, $3, TRUE, NULL, $5);
+         }
+         | EXPORT type ID exprs SEMICOLON
+         {
+            $$ = TBmakeGlobaldef( $2, $3, TRUE, $4, NULL);
+         }
+         | EXPORT type ID exprs LET expr SEMICOLON
+         {
+            $$ = TBmakeGlobaldef( $2, $3, TRUE, $4, $6);
          }
          | type ID SEMICOLON
          {
-            $$ = TBmakeGlobaldef( $1, $2, NULL, NULL);
+            $$ = TBmakeGlobaldef( $1, $2, FALSE, NULL, NULL);
          }
          | type ID LET expr SEMICOLON
          {
-            $$ = TBmakeGlobaldef( $1, $2, NULL, $4);
+            $$ = TBmakeGlobaldef( $1, $2, FALSE, NULL, $4);
          }
          | type ID exprs SEMICOLON
          {
-            $$ = TBmakeGlobaldef( $1, $2, $3, NULL);
+            $$ = TBmakeGlobaldef( $1, $2, FALSE, $3, NULL);
          }
          | type ID exprs LET expr SEMICOLON
          {
-            $$ = TBmakeGlobaldef( $1, $2, $3, $5);
+            $$ = TBmakeGlobaldef( $1, $2, FALSE, $3, $5);
          }
          ;
 
@@ -292,57 +304,85 @@ fundefs:  fundef
         }
         ; 
 
-fundef: EXPORT fundef
+fundef: EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
         {
-          $$ = $2;
-        } 
-        | EXTERN type ID BRACKET_L BRACKET_R SEMICOLON
-        {
-         $$ = TBmakeFundef($2, $3, NULL, NULL, NULL, NULL);
-        }   
+         $$ = TBmakeFundef($2, $3, FALSE, TRUE, NULL, NULL, NULL, NULL);
+        }  
         | EXTERN VOID ID BRACKET_L BRACKET_R SEMICOLON
         {
-         $$ = TBmakeFundef(T_unknown, $3, NULL, NULL, NULL, NULL);
+         $$ = TBmakeFundef(T_unknown, $3, FALSE, TRUE, NULL, NULL, NULL, NULL);
         } 
         | EXTERN type ID BRACKET_L param BRACKET_R SEMICOLON
         {
-         $$ = TBmakeFundef($2, $3, $5, NULL, NULL, NULL);
+         $$ = TBmakeFundef($2, $3, FALSE, TRUE, $5, NULL, NULL, NULL);
         } 
         | EXTERN VOID ID BRACKET_L param BRACKET_R SEMICOLON
         {
-         $$ = TBmakeFundef(T_unknown, $3, $5, NULL, NULL, NULL);
+         $$ = TBmakeFundef(T_unknown, $3, FALSE, TRUE, $5, NULL, NULL, NULL);
+        }
+        |EXPORT type ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef($2, $3, TRUE, FALSE, NULL, $7, NULL, NULL);
+        }
+        | EXPORT VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef(T_unknown, $3, TRUE, FALSE, NULL, $7, NULL, NULL);
+        }
+        | EXPORT type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef($2, $3, TRUE, FALSE, $5, $8, NULL, NULL);
+        }
+        | EXPORT VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef(T_unknown, $3, TRUE, FALSE, $5, $8, NULL, NULL);
+        }
+        | EXPORT type ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef( $2, $3, TRUE, FALSE, NULL, NULL, NULL, NULL);
+        }
+        | EXPORT VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef( T_unknown, $3, TRUE, FALSE, NULL, NULL, NULL, NULL);
+        }
+        | EXPORT type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef( $2, $3, TRUE, FALSE, $5, NULL, NULL, NULL);
+        }
+        | EXPORT VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
+        {
+          $$ = TBmakeFundef( T_unknown, $3, TRUE, FALSE, $5, NULL, NULL, NULL);
         }  
         |type ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef($1, $2, NULL, $6, NULL, NULL);
+          $$ = TBmakeFundef($1, $2, FALSE, FALSE, NULL, $6, NULL, NULL);
         }
         | VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef(T_unknown, $2, NULL, $6, NULL, NULL);
+          $$ = TBmakeFundef(T_unknown, $2, FALSE, FALSE, NULL, $6, NULL, NULL);
         }
         | type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef($1, $2, $4, $7, NULL, NULL);
+          $$ = TBmakeFundef($1, $2, FALSE, FALSE, $4, $7, NULL, NULL);
         }
         | VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L funbody CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef(T_unknown, $2, $4, $7, NULL, NULL);
+          $$ = TBmakeFundef(T_unknown, $2, FALSE, FALSE, $4, $7, NULL, NULL);
         }
         | type ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( $1, $2, NULL, NULL, NULL, NULL);
+          $$ = TBmakeFundef( $1, $2, FALSE, FALSE, NULL, NULL, NULL, NULL);
         }
         | VOID ID BRACKET_L BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( T_unknown, $2, NULL, NULL, NULL, NULL);
+          $$ = TBmakeFundef( T_unknown, $2, FALSE, FALSE, NULL, NULL, NULL, NULL);
         }
         | type ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( $1, $2, $4, NULL, NULL, NULL);
+          $$ = TBmakeFundef( $1, $2, FALSE, FALSE, $4, NULL, NULL, NULL);
         }
         | VOID ID BRACKET_L param BRACKET_R CURLY_BRACKET_L CURLY_BRACKET_R
         {
-          $$ = TBmakeFundef( T_unknown, $2, $4, NULL, NULL, NULL);
+          $$ = TBmakeFundef( T_unknown, $2, FALSE, FALSE, $4, NULL, NULL, NULL);
         }
         ;
 

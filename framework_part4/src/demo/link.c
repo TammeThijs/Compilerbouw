@@ -121,8 +121,8 @@ node *LINKfundef( node *arg_node, info *arg_info){
 node *LINKvar(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvar");
 
-    int scope = INFO_TOP(arg_info);
-
+  int scope = INFO_TOP(arg_info);
+  int scopeVar = INFO_SCOPE(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
   bool found = false;
   
@@ -143,6 +143,7 @@ node *LINKvar(node *arg_node, info *arg_info){
         VAR_NAME(arg_node) = SYMBOL_NAME(symbol);
         found = true;
         SYMBOL_STATE(symbol) = -1;
+        SYMBOL_SCOPE(symbol) = scopeVar;
       }
       else{
           symbol = SYMBOL_NEXT(symbol);
@@ -171,6 +172,7 @@ node *LINKvarlet(node *arg_node, info *arg_info){
   DBUG_ENTER("LINKvarlet");
 
   int scope = INFO_TOP(arg_info);
+  int scopeVar = INFO_SCOPE(arg_info);
   node *symbol = INFO_STACK(arg_info)[scope];
 
 
@@ -193,6 +195,7 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         VARLET_DECL(arg_node) = symbol; 
         VARLET_NAME(arg_node) = SYMBOL_NAME(symbol); 
         found = true;
+        SYMBOL_SCOPE(symbol) = scopeVar;
         SYMBOL_STATE(symbol) = -1;     
       }
       else{

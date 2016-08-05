@@ -1,4 +1,3 @@
-
 int main(){
 	int x = 0;
 	int y = 1;
@@ -7,8 +6,9 @@ int main(){
 }
 
 int one(int a){
+	int c = 2;
 	int two(int b){
-		return b;
+		return b*c;
 	}
 	return two(a);
 }

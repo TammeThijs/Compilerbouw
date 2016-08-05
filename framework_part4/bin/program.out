@@ -1,3 +1,29 @@
-foo:
+main:
+   esr 2
+   iloadc_0
+   istore 0
    iloadc_1
+   istore 1
+   isrg
+   iload_1
+   jsr 1 one
+   istore 0
+   iloadc_0
+   ireturn
 
+one:
+   esr 1
+   iloadc 0
+   istore 0
+   isrl
+   iload_1
+   jsr 1 _one_two
+   ireturn
+
+_one_two:
+   iload_0
+   iloadn 1 0
+   imul
+   ireturn
+
+.const int  2

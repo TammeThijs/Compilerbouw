@@ -245,6 +245,18 @@
           </targets>
         </type>
       </attribute>
+      <attribute name="Scope">
+        <type name="Int">
+          <targets>
+            <target mandatory="no">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
     </attributes>
   </node>
 
@@ -425,6 +437,30 @@
           </targets>
         </type>
       </attribute>
+      <attribute name="Export">
+        <type name="Bool">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Extern">
+        <type name="Bool">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
       <attribute name="Place">
         <type name="Int">
           <targets>
@@ -479,6 +515,18 @@
       </attribute>
       <attribute name="Name">
         <type name="String">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Export">
+        <type name="Bool">
           <targets>
             <target mandatory="yes">
               <any />

@@ -245,7 +245,6 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 //check types of operands of binop and rewrite binop if neccessary
 node * CTbinop(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTbinop");
-
 	node *leftexpr = BINOP_LEFT(arg_node);
   	node *rightexpr = BINOP_RIGHT(arg_node);
   
@@ -362,7 +361,6 @@ node *CTbool(node *arg_node, info *arg_info){
 //set info_type to float
 node *CTfloat(node *arg_node, info *arg_info){
 	DBUG_ENTER("CTFloat");
-
 	INFO_TYPE(arg_info) = T_float;
 
 	DBUG_RETURN(arg_node);
