@@ -150,7 +150,7 @@ stmts: stmt stmts
         }
         ;
 
-stmt: assign
+stmt: 	assign
        {
          $$ = $1;
        }
@@ -195,6 +195,10 @@ while: WHILE BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R
 dowhile: DO CURLY_BRACKET_L stmts CURLY_BRACKET_R WHILE BRACKET_L expr BRACKET_R SEMICOLON
         {
           $$ = TBmakeDowhile( $7, $3);
+        }
+        | DO stmt WHILE BRACKET_L expr BRACKET_R SEMICOLON
+        {
+          $$ = TBmakeDowhile( $5, $2);
         }
         ;
 
@@ -257,9 +261,9 @@ return:   RETURN expr SEMICOLON
         }
         ;
 
-exprstmt: ID BRACKET_L expr BRACKET_R SEMICOLON
+exprstmt: funcall SEMICOLON
         {
-          $$ = TBmakeExprstmt($3);
+          $$ = TBmakeExprstmt($1);
         }
         ;
 
@@ -454,11 +458,7 @@ vardec: vardec type ID SEMICOLON
         }
         ;
 
-varlet: ID exprs
-        {
-          $$ = TBmakeVarlet( STRcpy( $1), $2);
-        }
-        | ID
+varlet: ID
         {
           $$ = TBmakeVarlet( STRcpy( $1), NULL);
         }
@@ -516,10 +516,10 @@ expr: constant
      | expr OR expr        { $$ = TBmakeBinop(BO_or, $1, $3); }
      | expr AND expr      { $$ = TBmakeBinop(BO_and, $1, $3); }
       
-    | ID arrexpr
-      {
-        $$ = $2;
-      }
+    // | ID arrexpr
+    //   {
+    //     $$ = $2;
+    //   }
     | arrexpr
       {
         $$ = $1;

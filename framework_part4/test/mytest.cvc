@@ -1,4 +1,3 @@
-void foo() {
-    foo();
+void func(float b, bool c)
+{
 }
-

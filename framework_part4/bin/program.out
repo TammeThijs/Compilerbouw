@@ -1,16 +1,1 @@
-main:
-   esr 2
-   iloadc_0
-   istore 0
-   iloadc_1
-   istore 1
-   iload_1
-   isrg
-   jsre 0
-   iadd
-   istore 0
-   iloadc_0
-   ireturn
-
-.exportfun "main" int main
-.importfun "scanInt" int 
+func:

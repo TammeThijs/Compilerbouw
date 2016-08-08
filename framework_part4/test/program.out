@@ -1,6 +1,8 @@
-printInt:
 main:
-   iloadg -1
+   isrg
+   jsre 0
    iloadc_0
    ireturn
 
+.exportfun "main" int main
+.importfun "printInt" void int 
