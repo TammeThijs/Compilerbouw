@@ -24,7 +24,11 @@ struct INFO {
 	int branchcount;
 	int varcount;
 	int constantcount;
+	int exportfuncount;
+	int importfuncount;
 	node *consts [50];
+	node *exportfun [50];
+	node *importfun [50];
 	int scope;
 };
 
@@ -32,7 +36,11 @@ struct INFO {
 #define INFO_BRANCHCOUNT(n) ((n)->branchcount)
 #define INFO_VARCOUNT(n) ((n)->varcount)
 #define INFO_CONSTCOUNT(n) ((n)->constantcount)
+#define INFO_EXPORTFUNCOUNT(n) ((n)->exportfuncount)
+#define INFO_IMPORTFUNCOUNT(n) ((n)->importfuncount)
 #define INFO_CONSTS(n) ((n)->consts)
+#define INFO_EXPORTFUN(n) ((n)->exportfun)
+#define INFO_IMPORTFUN(n) ((n)->importfun)
 #define INFO_SCOPE(n) ((n)->scope)
 
 static info *MakeInfo(void)
@@ -46,6 +54,8 @@ static info *MakeInfo(void)
 	INFO_BRANCHCOUNT(result) = 0;
 	INFO_VARCOUNT(result) = 0;
 	INFO_CONSTCOUNT(result) = 0;
+	INFO_EXPORTFUNCOUNT(result) = 0;
+	INFO_IMPORTFUNCOUNT(result) = 0;
 	INFO_SCOPE(result) = -1;
 	DBUG_RETURN( result);
 }
@@ -62,21 +72,92 @@ static info *FreeInfo( info *info)
 node *GBCprogram(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCprogram");
 	PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
+	char buffer[20];
+	char *command;
 	//write constants
 	for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
 		if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
-			char buffer[20];
 			sprintf(buffer, "%d", NUM_VALUE(INFO_CONSTS(arg_info)[i]));
-			char *command = STRcatn(3, ".const int  ", buffer, "\n");
+			command = STRcatn(3, ".const int  ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
 		else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 31){
-			char buffer[20];
 			sprintf(buffer, "%f", FLOAT_VALUE(INFO_CONSTS(arg_info)[i]));
-			char *command = STRcatn(3, ".const float  ", buffer, "\n");
+			command = STRcatn(3, ".const float  ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
 	}
+	for(int i = 0; i<INFO_EXPORTFUNCOUNT(arg_info); i++){
+		node *fun = INFO_EXPORTFUN(arg_info)[i];
+		command = STRcatn(4, ".exportfun ", "\"", FUNDEF_NAME(fun), "\" ");
+		if(FUNDEF_TYPE(fun) == T_int){
+			command = STRcat(command, "int ");
+		}
+		else if(FUNDEF_TYPE(fun) == T_float){
+			command = STRcat(command, "float ");
+		}
+		else if(FUNDEF_TYPE(fun) == T_boolean){
+			command = STRcat(command, "bool ");
+		}
+		else{
+			command = STRcat(command, "void ");
+		}
+		if(FUNDEF_PARAMS(fun)!= NULL){
+			node *param = FUNDEF_PARAMS(fun);
+			do{
+				if(PARAM_TYPE(param) == T_int){
+					command = STRcat(command, "int ");
+				}
+				else if(PARAM_TYPE(param) == T_float){
+					command = STRcat(command, "float ");
+				}
+				else{
+					command = STRcat(command, "bool ");
+				}
+				param = PARAM_NEXT(param);
+				
+			}while(param != NULL);
+		}
+		command = STRcatn(3, command, FUNDEF_NAME(fun), "\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
+
+	for(int i = 0; i<INFO_IMPORTFUNCOUNT(arg_info); i++){
+		printf("assembly code import table maken");
+		node *fun = INFO_IMPORTFUN(arg_info)[i];
+		command = STRcatn(4, ".importfun ", "\"", FUNDEF_NAME(fun), "\" ");
+		if(FUNDEF_TYPE(fun) == T_int){
+			command = STRcat(command, "int ");
+		}
+		else if(FUNDEF_TYPE(fun) == T_float){
+			command = STRcat(command, "float ");
+		}
+		else if(FUNDEF_TYPE(fun) == T_boolean){
+			command = STRcat(command, "bool ");
+		}
+		else{
+			command = STRcat(command, "void ");
+		}
+		if(FUNDEF_PARAMS(fun)!= NULL){
+			node *param = FUNDEF_PARAMS(fun);
+			do{
+				if(PARAM_TYPE(param) == T_int){
+					command = STRcat(command, "int ");
+				}
+				else if(PARAM_TYPE(param) == T_float){
+					command = STRcat(command, "float ");
+				}
+				else{
+					command = STRcat(command, "bool ");
+				}
+				param = PARAM_NEXT(param);
+				
+			}while(param != NULL);
+		}
+		command = STRcat(command, "\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
+
 	DBUG_RETURN(arg_node);
 }
 
@@ -158,7 +239,7 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		
 	}
 	//if it is not main: also make code.
-	else if(! STReq(FUNDEF_NAME(arg_node), init_name)) {
+	else if(! STReq(FUNDEF_NAME(arg_node), init_name) && FUNDEF_EXTERN(arg_node) == FALSE) {
 		char *command = STRcat(FUNDEF_NAME(arg_node), ":\n");
 		fputs(command, INFO_CODE(arg_info));
 		if(locals > 0){
@@ -171,7 +252,15 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
 	}
 
-	
+	if(FUNDEF_EXPORT(arg_node) == TRUE){
+		INFO_EXPORTFUN(arg_info)[INFO_EXPORTFUNCOUNT(arg_info)] = arg_node;
+		INFO_EXPORTFUNCOUNT(arg_info) = INFO_EXPORTFUNCOUNT(arg_info) + 1;
+	}
+	if(FUNDEF_EXTERN(arg_node) == TRUE){
+		printf("function in de extern table stopppen");
+		INFO_IMPORTFUN(arg_info)[INFO_IMPORTFUNCOUNT(arg_info)] = arg_node;
+		INFO_IMPORTFUNCOUNT(arg_info) = INFO_IMPORTFUNCOUNT(arg_info) + 1;
+	}
 	DBUG_RETURN(arg_node);
 }
 
@@ -268,10 +357,21 @@ node *GBCfuncall( node *arg_node, info *arg_info){
 	}
 	else{
 		sprintf(buffer, "%d", scopefuncall);
-		char *command = STRcatn(3,"   isrn ", buffer, "\n");
+		command = STRcatn(3,"   isrn ", buffer, "\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
-	FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
+	if(FSYMBOL_EXTERN(FUNCALL_DECL(arg_node)) == TRUE){
+		int place = 0;
+		for(int i = 0; i < INFO_IMPORTFUNCOUNT(arg_info); i++){
+			if(FUNDEF_NAME(INFO_IMPORTFUN(arg_info)[i]) == FUNCALL_NAME(arg_node)){
+				place = i;
+			}
+		}
+		sprintf(buffer, "%d\n", place);
+		command = STRcat("   jsre ", buffer);
+	}
+	else{
+		FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);
 	int amountargs = 0;
 	node * arg;
 	if(FUNCALL_ARGS(arg_node)!= NULL){
@@ -286,6 +386,8 @@ node *GBCfuncall( node *arg_node, info *arg_info){
 	sprintf(buffer, "%d", amountargs);
 
 	command = STRcatn(5, "   jsr ", buffer, " ", FSYMBOL_NAME(FUNCALL_DECL(arg_node)), "\n");
+	}
+	
 
 	fputs(command, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);

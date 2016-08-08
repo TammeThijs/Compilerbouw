@@ -1,14 +1,10 @@
-int main(){
+extern int scanInt();
+
+export int main(){
 	int x = 0;
 	int y = 1;
-	x = one(y);
+	x = y + scanInt();
 	return 0;
 }
 
-int one(int a){
-	int c = 2;
-	int two(int b){
-		return b*c;
-	}
-	return two(a);
-}
+

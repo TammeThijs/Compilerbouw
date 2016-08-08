@@ -257,6 +257,30 @@
           </targets>
         </type>
       </attribute>
+      <attribute name="Extern">
+        <type name="Bool">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Export">
+        <type name="Bool">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
     </attributes>
   </node>
 
@@ -301,6 +325,18 @@
       </attribute>
       <attribute name="Scope">
         <type name="Int">
+          <targets>
+            <target mandatory="yes">
+              <any />
+              <phases>
+                <all />
+              </phases>
+            </target>
+          </targets>
+        </type>
+      </attribute>
+      <attribute name="Extern">
+        <type name="Bool">
           <targets>
             <target mandatory="yes">
               <any />

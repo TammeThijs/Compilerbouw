@@ -93,7 +93,7 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
   char *name;
   char buffer[RENAME_STR_SIZE];
 
-  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), STRcpy(GLOBALDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), STRcpy(GLOBALDEC_NAME( arg_node)), INFO_STATE(arg_info), TRUE, FALSE, NULL);
   snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
   name = STRcpy(SYMBOL_NAME( symbol));
@@ -121,8 +121,14 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 
   char *name;
   char buffer[RENAME_STR_SIZE];
-
-  node *symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  node *symbol;
+  if(GLOBALDEF_EXPORT(arg_node) == TRUE){
+    symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), FALSE, TRUE, NULL);
+  }
+  else{
+    symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), FALSE, FALSE, NULL);
+  }
+  
   snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
   name = STRcpy(SYMBOL_NAME( symbol));
@@ -145,20 +151,29 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 //put function definition in the right fsymboltable
 node *SYMfundef( node *arg_node, info *arg_info)
 {
+  node * fsymbol;
+  DBUG_ENTER("SYMfundef");
+  if(FUNDEF_EXTERN(arg_node) == TRUE){
+    fsymbol =  TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), TRUE, NULL);
+  }
+  else{
+    fsymbol =  TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), FALSE, NULL);
+  }
   
-DBUG_ENTER("SYMfundef");
-node * fsymbol = TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), NULL);
 
 //check which type root node is, and make new fsymbol table if there is none
-if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
-      if(PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
+  
+    if(PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
     }
-      else{
+    else{
       FSYMBOL_NEXT(fsymbol) = PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info));
       PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
     }
-  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
+  } 
+  else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
+    
      if(FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
     }
@@ -197,7 +212,7 @@ node *SYMparam( node *arg_node, info * arg_info)
   char *name;
   char buffer[RENAME_STR_SIZE];
 
-  node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), STRcpy(PARAM_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+  node *symbol = TBmakeSymbol(PARAM_TYPE( arg_node), STRcpy(PARAM_NAME( arg_node)), INFO_STATE(arg_info), FALSE, FALSE, NULL);
   snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
   name = STRcpy(SYMBOL_NAME( symbol));
@@ -252,7 +267,7 @@ node *SYMvardec( node *arg_node, info * arg_info)
 	char *name;
 	char buffer[RENAME_STR_SIZE];
 
-	node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), STRcpy(VARDEC_NAME( arg_node)), INFO_STATE(arg_info), NULL);
+	node *symbol = TBmakeSymbol(VARDEC_TYPE( arg_node), STRcpy(VARDEC_NAME( arg_node)), INFO_STATE(arg_info), FALSE, FALSE, NULL);
 	snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
 	name = STRcpy(SYMBOL_NAME( symbol));
@@ -269,17 +284,6 @@ node *SYMvardec( node *arg_node, info * arg_info)
 	SYMBOL_NEXT(symbol) = FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
 	FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
 	}
-
-
-	// else if(NODE_TYPE(INFO_ROOT_NODE(arg_info))== 17){
-	//    if(FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
-	//     FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-	//   }
-	//     else{
-	//     SYMBOL_NEXT(symbol) = FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
-	//     FOR_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
-	//   }
-	// }
 
 	//keep traversing
 	VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
@@ -315,11 +319,6 @@ node *SYMfor( node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("SYMfor");  
 
-	// node *symbol = TBmakeSymbol(T_int, FOR_LOOPVAR( arg_node), INFO_STATE(arg_info), NULL);
-	// node *tmp = INFO_ROOT_NODE(arg_info);
-
-	// FOR_SYMBOLTABLE(arg_node) = symbol;
-	// INFO_ROOT_NODE(arg_info) = arg_node;
 
 	INFO_ISFOR(arg_info) = 1;
 	FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);

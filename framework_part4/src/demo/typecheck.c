@@ -102,7 +102,7 @@ node *CTfundef(node *arg_node, info *arg_info){
 	if(INFO_HASRETURN(arg_info) == 0){
 		INFO_FUNTYPE(arg_info) = T_unknown;
 	}
-	if(FUNDEF_TYPE(arg_node) != INFO_FUNTYPE(arg_info)){
+	if(FUNDEF_TYPE(arg_node) != INFO_FUNTYPE(arg_info) && FUNDEF_EXTERN(arg_node) == FALSE){
 		CTIerrorLine(NODE_LINE(arg_node), "Return type does not match function type fun: %d ret:  %d", FUNDEF_TYPE(arg_node), INFO_TYPE(arg_info));
 	}
 	DBUG_RETURN(arg_node);
