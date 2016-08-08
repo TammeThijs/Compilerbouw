@@ -1,8 +1,14 @@
-main:
-   isrg
-   jsre 0
-   iloadc_0
-   ireturn
+func:
+   esr 2
+   iloadc 0
+   ineg
+   iloadc 1
+   iadd
+   istore 0
+   iloadc 0
+   iloadc 1
+   isub
+   istore 1
 
-.exportfun "main" int main
-.importfun "printInt" void int 
+_func_f:
+_func_g:

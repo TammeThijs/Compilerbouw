@@ -45,7 +45,7 @@ static int yyerror( char *errname);
 %type <node> param funbody globaldef exprs expr
 %type <node> globaldec ids vardec cast 
 %type <node> if while dowhile for return 
-%type <node> exprstmt var arrexpr funcall error
+%type <node> exprstmt var funcall error
 %type <ctype> type
 
 %right LET
@@ -55,7 +55,7 @@ static int yyerror( char *errname);
 %left LE LT GE GT
 %left MINUS PLUS
 %left STAR SLASH PERCENT
-%left BRACKET_L BRACKET_R STRAIGHT_BRACKET_L STRAIGHT_BRACKET_R
+%left BRACKET_L BRACKET_R
 %left UNARY
 
 %nonassoc IFX
@@ -515,15 +515,6 @@ expr: constant
      | expr NE expr        { $$ = TBmakeBinop(BO_ne, $1, $3); }
      | expr OR expr        { $$ = TBmakeBinop(BO_or, $1, $3); }
      | expr AND expr      { $$ = TBmakeBinop(BO_and, $1, $3); }
-      
-    // | ID arrexpr
-    //   {
-    //     $$ = $2;
-    //   }
-    | arrexpr
-      {
-        $$ = $1;
-      }
     ;
 
 cast: BRACKET_L type BRACKET_R expr
@@ -542,12 +533,6 @@ funcall: ID BRACKET_L exprs BRACKET_R
       $$ = TBmakeFuncall( STRcpy($1), NULL);
     }
     ;
-
-arrexpr: STRAIGHT_BRACKET_L exprs STRAIGHT_BRACKET_R
-      {
-        $$ = TBmakeArrexpr($2);
-      }
-      ;
 
 var : ID
       {

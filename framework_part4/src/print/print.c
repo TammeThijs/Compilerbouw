@@ -250,25 +250,6 @@ PRTfundefs (node * arg_node, info * arg_info)
   FUNDEFS_NEXT( arg_node) = TRAVopt( FUNDEFS_NEXT( arg_node), arg_info);
   DBUG_RETURN(arg_node);
 }
-/** <!--******************************************************************-->
- *
- * @fn PRTarrexpr
- *
- * @brief Prints the node and its sons/attributes
- *
- * @param arg_node arrexpr node to process
- * @param arg_info pointer to info structure
- *
- * @return processed node
- *
- ***************************************************************************/
-node *
-PRTarrexpr (node * arg_node, info * arg_info)
-{
-  DBUG_ENTER("PRTarrexpr");
-  ARREXPR_EXPRS( arg_node) = TRAVdo(ARREXPR_EXPRS( arg_node), arg_info);
-  DBUG_RETURN(arg_node);
-}
 
 /** <!--******************************************************************-->
  *

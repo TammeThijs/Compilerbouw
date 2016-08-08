@@ -335,12 +335,6 @@ node *GBCassign( node *arg_node, info *arg_info){
 	DBUG_RETURN(arg_node);
 }
 
-node *GBCarrexpr( node *arg_node, info *arg_info){
-	DBUG_ENTER("GBCexprs");
-	ARREXPR_EXPRS(arg_node) = TRAVdo( ARREXPR_EXPRS(arg_node), arg_info);
-	DBUG_RETURN(arg_node);
-}
-
 node *GBCfuncall( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfuncall");
 	int scopefuncall = FSYMBOL_SCOPE(FUNCALL_DECL(arg_node));
@@ -776,27 +770,27 @@ node *GBCnum( node *arg_node, info *arg_info){
 //write assembly float constant
 node *GBCfloat( node *arg_node, info *arg_info){
 	DBUG_ENTER("CBGfloat");
-	if(FLOAT_VALUE(arg_node) == 0.0){
-		fputs("   floadc_0\n", INFO_CODE(arg_info));
-	}
-	else if (FLOAT_VALUE(arg_node) == 1.0){
-		fputs("   floadc_1\n", INFO_CODE(arg_info));
-	}
-	else {
-		if(INFO_CONSTCOUNT(arg_info) == 0){
-			fputs("   floadc 0\n", INFO_CODE(arg_info));
-			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
-			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
-		}
-		else{
-			char buffer[1];
-			sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
-			char *command  = STRcatn(3,"   floadc ", buffer, "\n");
-			fputs(command, INFO_CODE(arg_info));
-			INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
-			INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
-		}
-	}
+	// if(FLOAT_VALUE(arg_node) == 0.0){
+	// 	fputs("   floadc_0\n", INFO_CODE(arg_info));
+	// }
+	// else if (FLOAT_VALUE(arg_node) == 1.0){
+	// 	fputs("   floadc_1\n", INFO_CODE(arg_info));
+	// }
+	// else {
+	// 	if(INFO_CONSTCOUNT(arg_info) == 0){
+	// 		fputs("   floadc 0\n", INFO_CODE(arg_info));
+	// 		INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+	// 		INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
+	// 	}
+	// 	else{
+	// 		char buffer[1];
+	// 		sprintf(buffer, "%d", INFO_CONSTCOUNT(arg_info));
+	// 		char *command  = STRcatn(3,"   floadc ", buffer, "\n");
+	// 		fputs(command, INFO_CODE(arg_info));
+	// 		INFO_CONSTS(arg_info)[INFO_CONSTCOUNT(arg_info)] = arg_node;
+	// 		INFO_CONSTCOUNT(arg_info) = INFO_CONSTCOUNT(arg_info) + 1;
+	// 	}
+	// }
 	DBUG_RETURN(arg_node);
 }
 
@@ -816,10 +810,10 @@ node *GBCerror( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCerror");
 	DBUG_RETURN(arg_node);
 }
+
 /*
  * Traversal start function
  */
-
 node *GBCdoGenByteCode( node *syntaxtree)
 {
   

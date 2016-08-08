@@ -17,7 +17,6 @@ extern node *GBCparam (node *arg_node, info *arg_info);
 extern node *GBCcast( node *arg_node, info *arg_info);
 extern node *GBCexprs( node *arg_node, info *arg_info);
 extern node *GBCstmts( node *arg_node, info *arg_info);
-extern node *GBCarrexpr( node *arg_node, info *arg_info);
 extern node *GBCfuncall( node *arg_node, info *arg_info);
 extern node *GBCbinop( node *arg_node, info *arg_info);
 extern node *GBCmonop( node *arg_node, info *arg_info);

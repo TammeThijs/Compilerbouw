@@ -84,7 +84,7 @@ demo        = opt_sub.o symbol_table.o link.o typecheck.o init_to_reg.o
 # Subdirectories of "test/" to traverse into during testing. Enable
 # "nested_funs" and "arrays" when you start implementing those extensions.
 # "preprocess" is optional, for those who implemented the C preprocessor.
-TEST_DIRS := basic
+TEST_DIRS := basic nested_funs
 
 # Flags to pass to your compiler when running tests (e.g., a verbosity level).
 # TEST_CFLAGS := ""

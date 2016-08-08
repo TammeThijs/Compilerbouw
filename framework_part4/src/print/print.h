@@ -19,7 +19,6 @@ extern node *PRTfunbody (node * arg_node, info * arg_info);
 extern node *PRTfundefs (node * arg_node, info * arg_info);
 extern node *PRTids (node * arg_node, info * arg_info);
 extern node *PRTexprstmt (node * arg_node, info * arg_info);
-extern node *PRTarrexpr (node * arg_node, info * arg_info);
 extern node *PRTfuncall (node * arg_node, info * arg_info);
 extern node *PRTglobaldef (node * arg_node, info * arg_info);
 extern node *PRTglobaldec (node * arg_node, info * arg_info);

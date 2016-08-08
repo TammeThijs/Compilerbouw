@@ -266,7 +266,7 @@ node *LINKfuncall(node *arg_node, info *arg_info){
       }
     }
     if(paramcount != argumentcount){
-      CTIerrorLine(NODE_LINE(arg_node), "Number of given arguments does not match the number of parameters.");
+      CTIerrorLine(NODE_LINE(arg_node), "Number of given arguments does not match the number of parameters. Param: %d, arguments: %d", paramcount, argumentcount);
     }
   }
   FUNCALL_ARGS(arg_node) = TRAVopt(FUNCALL_ARGS(arg_node), arg_info);

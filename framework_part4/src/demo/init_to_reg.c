@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
- * Module: symbol_table
+ * Module: init_to_reg
  *
- * Prefix: SYM
+ * Prefix: INIT
  *
- * Description:
+ * Description: Turning Variable Initialisations into Regular Assignments.
  *
- * TODO
+ * Tamme
  *
  *****************************************************************************/
 
@@ -177,7 +177,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
   }
 
-  node *INITstmts (node *arg_node, info *arg_info){
+node *INITstmts (node *arg_node, info *arg_info){
   DBUG_ENTER("INITstmts");
   DBUG_RETURN(arg_node);
  }
