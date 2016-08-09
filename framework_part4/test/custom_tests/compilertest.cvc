@@ -1,10 +1,18 @@
+extern int z;
 extern int scanInt();
 
 export int main(){
 	int x = 0;
-	int y = 1;
+	int y = z + 1;
 	x = y + scanInt();
+	if (x>10){
+		x = x - minus(y);
+	}
 	return 0;
+}
+
+int minus(int y){
+	return y * 2;
 }
 
 

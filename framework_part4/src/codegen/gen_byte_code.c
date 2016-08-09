@@ -26,9 +26,11 @@ struct INFO {
 	int constantcount;
 	int exportfuncount;
 	int importfuncount;
+	int importvarcount;
 	node *consts [50];
 	node *exportfun [50];
 	node *importfun [50];
+	node *importvar [50];
 	int scope;
 };
 
@@ -38,9 +40,11 @@ struct INFO {
 #define INFO_CONSTCOUNT(n) ((n)->constantcount)
 #define INFO_EXPORTFUNCOUNT(n) ((n)->exportfuncount)
 #define INFO_IMPORTFUNCOUNT(n) ((n)->importfuncount)
+#define INFO_IMPORTVARCOUNT(n) ((n)->importvarcount)
 #define INFO_CONSTS(n) ((n)->consts)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_IMPORTFUN(n) ((n)->importfun)
+#define INFO_IMPORTVAR(n) ((n)->importvar)
 #define INFO_SCOPE(n) ((n)->scope)
 
 static info *MakeInfo(void)
@@ -56,6 +60,7 @@ static info *MakeInfo(void)
 	INFO_CONSTCOUNT(result) = 0;
 	INFO_EXPORTFUNCOUNT(result) = 0;
 	INFO_IMPORTFUNCOUNT(result) = 0;
+	INFO_IMPORTVARCOUNT(result) = 0;
 	INFO_SCOPE(result) = -1;
 	DBUG_RETURN( result);
 }
@@ -158,6 +163,21 @@ node *GBCprogram(node *arg_node, info *arg_info){
 		fputs(command, INFO_CODE(arg_info));
 	}
 
+	for(int i = 0; i < INFO_IMPORTVARCOUNT(arg_info); i++){
+		printf("assembly code import var table maken");
+		node *var = INFO_IMPORTVAR(arg_info)[i];
+		command = STRcatn(4, ".importvar ", "\"", GLOBALDEC_NAME(var), "\" ");
+		if(GLOBALDEC_TYPE(var) == T_int){
+			command = STRcat(command, "int\n");
+		}
+		else if(GLOBALDEC_TYPE(var) == T_float){
+			command = STRcat(command, "float\n");
+		}
+		else{
+			command = STRcat(command, "bool\n");
+		}
+		fputs(command, INFO_CODE(arg_info));
+	}
 	DBUG_RETURN(arg_node);
 }
 
@@ -274,6 +294,8 @@ node *GBCglobaldef( node *arg_node, info *arg_info){
 node *GBCglobaldec( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldec");
 	GLOBALDEC_DIMS(arg_node) = TRAVopt(GLOBALDEC_DIMS(arg_node), arg_info);
+	INFO_IMPORTVAR(arg_info)[INFO_IMPORTVARCOUNT(arg_info)] = arg_node;
+	INFO_IMPORTVARCOUNT(arg_info) = INFO_IMPORTVARCOUNT(arg_info) + 1;
 	DBUG_RETURN(arg_node);
 }
 
@@ -657,7 +679,14 @@ node *GBCif( node *arg_node, info *arg_info){
 		IF_ELSEBLOCK(arg_node) = TRAVdo(IF_ELSEBLOCK(arg_node), arg_info);
 		
 	}
-	
+	else{
+		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
+		command = STRcatn(3, "   branch_f ", buffer, "_end\n");
+		fputs(command, INFO_CODE(arg_info));
+		IF_IFBLOCK(arg_node) = TRAVdo(IF_IFBLOCK(arg_node), arg_info);
+		command = STRcatn(3, "   jump ", buffer, "_end\n\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
 	command = STRcat(buffer, "_end:\n");
 	fputs(command, INFO_CODE(arg_info));
 	

@@ -1,1 +1,37 @@
-func:
+main:
+   esr 2
+   iloadc_0
+   istore 0
+   iload_1
+   iloadc_1
+   iadd
+   istore 2
+   iload_2
+   isrg
+   jsre 0
+   iadd
+   istore 0
+   iload_0
+   iloadc 0
+   igt
+   branch_f 1_end
+   iload_0
+   isrg
+   iload_2
+   jsr 1 minus
+   isub
+   istore 0
+   jump 1_end
+1_end:
+   iloadc_0
+   ireturn
+
+minus:
+   iload_0
+   iloadc 1
+   imul
+   ireturn
+
+.exportfun "main" int main
+.importfun "scanInt" int 
+.importvar "0x7fffaabe88a0_z" int
