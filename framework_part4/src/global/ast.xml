@@ -235,7 +235,7 @@
       <attribute name="State">
         <type name="Int">
           <targets>
-            <target mandatory="yes">
+            <target mandatory="no">
               <any />
               <phases>
                 <all />
@@ -247,7 +247,7 @@
       <attribute name="Scope">
         <type name="Int">
           <targets>
-            <target mandatory="no">
+            <target mandatory="yes">
               <any />
               <phases>
                 <all />

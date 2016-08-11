@@ -27,10 +27,14 @@ struct INFO {
 	int exportfuncount;
 	int importfuncount;
 	int importvarcount;
+	int exportvarcount;
+	int globalvarcount;
 	node *consts [50];
 	node *exportfun [50];
 	node *importfun [50];
 	node *importvar [50];
+	node *exportvar [50];
+	node *globalvar [50];
 	int scope;
 };
 
@@ -41,10 +45,14 @@ struct INFO {
 #define INFO_EXPORTFUNCOUNT(n) ((n)->exportfuncount)
 #define INFO_IMPORTFUNCOUNT(n) ((n)->importfuncount)
 #define INFO_IMPORTVARCOUNT(n) ((n)->importvarcount)
+#define INFO_EXPORTVARCOUNT(n) ((n)->exportvarcount)
+#define INFO_GLOBALVARCOUNT(n) ((n)->globalvarcount)
 #define INFO_CONSTS(n) ((n)->consts)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_IMPORTFUN(n) ((n)->importfun)
 #define INFO_IMPORTVAR(n) ((n)->importvar)
+#define INFO_EXPORTVAR(n) ((n)->exportvar)
+#define INFO_GLOBALVAR(n) ((n)->globalvar)
 #define INFO_SCOPE(n) ((n)->scope)
 
 static info *MakeInfo(void)
@@ -61,6 +69,8 @@ static info *MakeInfo(void)
 	INFO_EXPORTFUNCOUNT(result) = 0;
 	INFO_IMPORTFUNCOUNT(result) = 0;
 	INFO_IMPORTVARCOUNT(result) = 0;
+	INFO_EXPORTVARCOUNT(result) = 0;
+	INFO_GLOBALVARCOUNT(result) = 0;
 	INFO_SCOPE(result) = -1;
 	DBUG_RETURN( result);
 }
@@ -81,18 +91,20 @@ node *GBCprogram(node *arg_node, info *arg_info){
 	char *command;
 	//write constants
 	for(int i = 0; i<INFO_CONSTCOUNT(arg_info); i++){
-		if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
+		printf("constant table maken \n");
+		if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 29){
 			sprintf(buffer, "%d", NUM_VALUE(INFO_CONSTS(arg_info)[i]));
 			command = STRcatn(3, ".const int  ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
-		else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 31){
+		else if(NODE_TYPE(INFO_CONSTS(arg_info)[i]) == 30){
 			sprintf(buffer, "%f", FLOAT_VALUE(INFO_CONSTS(arg_info)[i]));
 			command = STRcatn(3, ".const float  ", buffer, "\n");
 			fputs(command, INFO_CODE(arg_info));
 		}
 	}
 	for(int i = 0; i<INFO_EXPORTFUNCOUNT(arg_info); i++){
+		printf("export fun table maken\n");
 		node *fun = INFO_EXPORTFUN(arg_info)[i];
 		command = STRcatn(4, ".exportfun ", "\"", FUNDEF_NAME(fun), "\" ");
 		if(FUNDEF_TYPE(fun) == T_int){
@@ -164,7 +176,7 @@ node *GBCprogram(node *arg_node, info *arg_info){
 	}
 
 	for(int i = 0; i < INFO_IMPORTVARCOUNT(arg_info); i++){
-		printf("assembly code import var table maken");
+		printf("assembly code import var table maken\n");
 		node *var = INFO_IMPORTVAR(arg_info)[i];
 		command = STRcatn(4, ".importvar ", "\"", GLOBALDEC_NAME(var), "\" ");
 		if(GLOBALDEC_TYPE(var) == T_int){
@@ -175,6 +187,43 @@ node *GBCprogram(node *arg_node, info *arg_info){
 		}
 		else{
 			command = STRcat(command, "bool\n");
+		}
+		fputs(command, INFO_CODE(arg_info));
+	}
+
+	for(int i = 0; i < INFO_EXPORTVARCOUNT(arg_info); i++){
+		printf("assembly code export var table maken\n");
+		node *var = INFO_EXPORTVAR(arg_info)[i];
+		int place = i;
+		bool gevonden = FALSE;
+		while(!gevonden && place < INFO_GLOBALVARCOUNT(arg_info)){
+			node *globalvar = INFO_GLOBALVAR(arg_info)[place];
+			if(GLOBALDEF_NAME(globalvar) == GLOBALDEF_NAME(var)){
+				gevonden = TRUE;
+				printf("global var voor export gevonden op plek %d\n", place);
+			}
+			else{
+				printf("global var niet gevonden op plek %d\n", place);
+				place ++;
+			}
+			
+		}
+		sprintf(buffer, "%d\n", place);
+		command = STRcatn(5, ".exportvar ", "\"", GLOBALDEF_NAME(var), "\" ", buffer);
+		fputs(command, INFO_CODE(arg_info));
+	}
+
+	for(int i = 0; i < INFO_GLOBALVARCOUNT(arg_info); i++){
+		printf("assembly code global var table maken\n");
+		node *var = INFO_GLOBALVAR(arg_info)[i];
+		if(GLOBALDEF_TYPE(var) == T_int){
+			command = ".global int\n";
+		}
+		else if(GLOBALDEF_TYPE(var) == T_float){
+			command = ".global float\n";
+		}
+		else{
+			command = ".global bool\n";
 		}
 		fputs(command, INFO_CODE(arg_info));
 	}
@@ -258,6 +307,11 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 		
 	}
+	else if(STReq(FUNDEF_NAME(arg_node), init_name) && FUNDEF_FUNBODY(arg_node)!= NULL){
+		printf("init maken");
+		fputs("__init:\n", INFO_CODE(arg_info));
+		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+	}
 	//if it is not main: also make code.
 	else if(! STReq(FUNDEF_NAME(arg_node), init_name) && FUNDEF_EXTERN(arg_node) == FALSE) {
 		char *command = STRcat(FUNDEF_NAME(arg_node), ":\n");
@@ -287,6 +341,12 @@ node *GBCfundef(node *arg_node, info *arg_info){
 node *GBCglobaldef( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldef");
 	GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
+	INFO_GLOBALVAR(arg_info)[INFO_GLOBALVARCOUNT(arg_info)] = arg_node;
+	INFO_GLOBALVARCOUNT(arg_info) = INFO_GLOBALVARCOUNT(arg_info) + 1;
+	if(GLOBALDEF_EXPORT(arg_node) == TRUE){
+		INFO_EXPORTVAR(arg_info)[INFO_EXPORTVARCOUNT(arg_info)] = arg_node;
+		INFO_EXPORTVARCOUNT(arg_info) = INFO_EXPORTVARCOUNT(arg_info) + 1;
+	}
 	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
@@ -492,12 +552,10 @@ node *GBCmonop( node *arg_node, info *arg_info){
 //write code var
 node *GBCvar( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvar");
-	printf("in de var\n");
 	int place = -1;
 	char buffer[5];
 	char buffer2 [5];
 	char *type;
-	printf("voor de type");
 	if (SYMBOL_TYPE(VAR_DECL(arg_node)) == T_int){
 		type = "i";
 	}
@@ -507,15 +565,34 @@ node *GBCvar( node *arg_node, info *arg_info){
 	else{
 		type = "b";
 	}
-	printf("na de type");
-	if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_SCOPE(VAR_DECL(arg_node)) == (INFO_SCOPE(arg_info) + 1)){
+	if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
+		place = 0;
+		bool gevonden = FALSE;
+		while(!gevonden && place < INFO_GLOBALVARCOUNT(arg_info)){
+			node *globalvar = INFO_GLOBALVAR(arg_info)[place];
+			if(GLOBALDEF_NAME(globalvar) == VAR_NAME(arg_node)){
+				gevonden = TRUE;
+			}
+			else{
+				place ++;
+			}
+			
+		}
+		SYMBOL_STATE(VAR_DECL(arg_node)) = place;
+	}
+	else if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_SCOPE(VAR_DECL(arg_node)) == (INFO_SCOPE(arg_info) + 1)){
 		SYMBOL_STATE(VAR_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 		INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
 	}
+
 	place = SYMBOL_STATE(VAR_DECL(arg_node));
-	printf("na de place");
-	if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == INFO_SCOPE(arg_info) + 1){
-		printf("in de local if");
+	if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
+		sprintf(buffer, "%d", place);
+		char *string = STRcatn(3, "   ", type,"loadg ");
+		char *command = STRcatn(3, string, buffer, "\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
+	else if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == INFO_SCOPE(arg_info) + 1){
 
 		if(SYMBOL_STATE(VAR_DECL(arg_node)) == 0){
 			char *string = STRcatn(3, "   ", type,"load_0\n");
@@ -540,15 +617,7 @@ node *GBCvar( node *arg_node, info *arg_info){
 			fputs(command, INFO_CODE(arg_info));
 		}
 	}
-	else if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
-		printf("in de global if");
-		sprintf(buffer, "%d", place);
-		char *string = STRcatn(3, "   ", type,"loadg ");
-		char *command = STRcatn(3, string, buffer, "\n");
-		fputs(command, INFO_CODE(arg_info));
-	}
 	else{
-		printf("in de n if");
 		sprintf(buffer, "%d", place);
 		sprintf(buffer2, "%d ", SYMBOL_SCOPE(VAR_DECL(arg_node)));
 		char *string = STRcatn(3, "   ", type,"loadn ");
@@ -565,12 +634,10 @@ node *GBCvar( node *arg_node, info *arg_info){
 //write code varlet
 node *GBCvarlet( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvarlet");
-	printf("in de varlet");
 	int place = -1;
 	char buffer[5];
 	char buffer2 [5];
 	char *type;
-	printf("SYMBOL SCOPE: %d, INFO SCOPE: %d\n", SYMBOL_SCOPE(VARLET_DECL(arg_node)), INFO_SCOPE(arg_info));
 	if(SYMBOL_TYPE(VARLET_DECL(arg_node)) == T_int){
 		type = "i";
 	}
@@ -580,20 +647,37 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	else{
 		type = "b";
 	}
-	if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place && SYMBOL_SCOPE(VARLET_DECL(arg_node)) == (INFO_SCOPE(arg_info) + 1)){
+
+	if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place && SYMBOL_SCOPE(VARLET_DECL(arg_node)) == 0){
+		place = 0;
+		bool gevonden = FALSE;
+		while(!gevonden && place < INFO_GLOBALVARCOUNT(arg_info)){
+			node *globalvar = INFO_GLOBALVAR(arg_info)[place];
+			if(GLOBALDEF_NAME(globalvar) == VARLET_NAME(arg_node)){
+				gevonden = TRUE;
+			}
+			else{
+				place ++;
+			}
+			
+		}
+		SYMBOL_STATE(VARLET_DECL(arg_node)) = place;
+	}
+	else if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place && SYMBOL_SCOPE(VARLET_DECL(arg_node)) == (INFO_SCOPE(arg_info) + 1)){
 		SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
 		INFO_VARCOUNT(arg_info) = INFO_VARCOUNT(arg_info) + 1;
 	}
 	place = SYMBOL_STATE(VARLET_DECL(arg_node));
-	if(SYMBOL_SCOPE(VARLET_DECL(arg_node)) == INFO_SCOPE(arg_info) + 1){
+	
+	if( SYMBOL_SCOPE(VARLET_DECL(arg_node)) == 0){
 		sprintf(buffer, "%d", place);
-		char *string = STRcatn(3, "   ", type, "store ");
+		char *string = STRcatn(3, "   ", type, "storeg ");
 		char *command = STRcatn(3, string, buffer, "\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
-	else if( SYMBOL_SCOPE(VARLET_DECL(arg_node)) == 0){
+	else if(SYMBOL_SCOPE(VARLET_DECL(arg_node)) == INFO_SCOPE(arg_info) + 1){
 		sprintf(buffer, "%d", place);
-		char *string = STRcatn(3, "   ", type, "storeg ");
+		char *string = STRcatn(3, "   ", type, "store ");
 		char *command = STRcatn(3, string, buffer, "\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
