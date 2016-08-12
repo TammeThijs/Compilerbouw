@@ -18,6 +18,7 @@
 #include "memory.h"
 #include "stdio.h"
 #include "str.h"
+#include "globals.h"
 
 struct INFO {
 	FILE *code;
@@ -62,7 +63,7 @@ static info *MakeInfo(void)
 	DBUG_ENTER( "MakeInfo");
 
 	result = (info *)MEMmalloc(sizeof(info));
-	INFO_CODE(result) = fopen("program.out", "w+");
+	INFO_CODE(result) = fopen(global.outfile, "w+");
 	INFO_BRANCHCOUNT(result) = 0;
 	INFO_VARCOUNT(result) = 0;
 	INFO_CONSTCOUNT(result) = 0;
@@ -411,7 +412,10 @@ node *GBCstmts( node *arg_node, info *arg_info){
 //check vardec
 node *GBCvardec( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCvardec");
-	VARDEC_INIT(arg_node) = TRAVopt(VARDEC_INIT(arg_node), arg_info);
+	if(VARDEC_INIT(arg_node)!= NULL){
+		VARDEC_INIT(arg_node) = TRAVdo(VARDEC_INIT(arg_node), arg_info);
+	}
+	
 	VARDEC_NEXT(arg_node) = TRAVopt(VARDEC_NEXT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
