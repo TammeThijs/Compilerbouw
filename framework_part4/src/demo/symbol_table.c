@@ -238,11 +238,11 @@ node *SYMparam( node *arg_node, info * arg_info)
     }
 
   } 
-
+  MEMfree(name);  
+  
   //keep traversing
   PARAM_NEXT( arg_node) = TRAVopt( PARAM_NEXT( arg_node), arg_info);
 
-  MEMfree(name);  
   DBUG_RETURN(arg_node);
 }
 

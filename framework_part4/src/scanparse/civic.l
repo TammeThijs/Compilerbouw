@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
+#include <errno.h>
+
 
 #include "types.h"
 #include "node_basic.h"
@@ -20,6 +23,10 @@
 #define LINEBUF_SIZE 256
 #define YY_NO_UNPUT
 #define YY_NO_INPUT
+
+static int yyerror( char *errname);
+static int rangeCheck( char *integer);
+
 
 
 %}
@@ -81,6 +88,7 @@
                            }
 
 [0-9]+                     { yylval.cint=atoi(yytext);
+                              rangeCheck(yytext);
                              FILTER( NUM);
                            }
 
@@ -98,6 +106,30 @@
 \/\/.*                      {/* single comment */}
 \/\*([^*]|\*+[^*/])*\*\/   {/* multi comment */}
 %%
+
+static int yyerror( char *error)
+{
+  CTIabort( "Error parsing source code: %s\n", 
+            error);
+
+  return( 0);
+}
+
+static int rangeCheck( char *integer)
+{
+  errno = 0;
+  long output;
+
+  output = strtol(integer, NULL, 10);
+
+  printf("Test %ld\n", output);
+
+  if(errno || output >= INT_MAX || output <= INT_MIN){
+    yyerror("Integer out of range");
+  }
+
+  return( 0);
+}
 
 
 
