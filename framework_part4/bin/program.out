@@ -1,50 +1,21 @@
 __init:
-   iloadc 0
-   istoreg 0
-   return
 
 main:
-   esr 2
+   esr 1
    iloadc_0
-   istore 0
-   iloadg 0
-   iloadc_1
-   iadd
-   istore 1
-   iload_1
+1_for:
+   iload 0
+   iloadc 0
+   ilt   branch_f 2_end
    isrg
+   iload_0
    jsre 0
-   iadd
-   istore 0
-   iload_0
-   iloadc 1
-   igt
-   branch_f 1_end
-   iload_0
-   isrg
-   iload_1
-   jsr 1 minus
-   isub
-   istore 0
-   jump 1_end
-
-1_end:
+   iinc_1 0
+   jump 1_for
+2_end: 
    iloadc_0
    ireturn
 
-minus:
-   iload_0
-   iloadc 2
-   imul
-   ireturn
-
-.const int  3
-.const int  10
-.const int  2
+.const int  5
 .exportfun "main" int main
-.importfun "scanInt" int 
-.importvar "0x7ffd10fc4340_z" int
-.exportvar "0x7ffd10fc4220_s" 1
-.global int
-.global bool
-.global float
+.importfun "printInt" void int 
