@@ -27,9 +27,9 @@
   node *funBody;
   node *stmtStack [20];
   node *forassigns [20];
-  int countfors;
   int firstTime;
   int count;
+  int amountFor;
 };
 
 #define INFO_ROOTNODE(n) ((n)->rootNode)
@@ -38,7 +38,8 @@
 #define INFO_COUNTER(n) ((n)->count)
 #define INFO_FIRSTTIME(n) ((n)->firstTime)
 #define INFO_FORASSIGNS(n) ((n)->forassigns)
-#define INFO_COUNTFORS(n) ((n)->countfors)
+#define INFO_AMOUNTFOR(n) ((n)->amountFor)
+
 
 info *enqueue(info * arg_info, node *stmt){
   INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
@@ -64,7 +65,8 @@ static info *MakeInfo(void)
   INFO_FUNBODY( result) = NULL;
   INFO_COUNTER( result) = 0;
   INFO_FIRSTTIME( result) = 0;
-  INFO_COUNTFORS( result) = 0;
+  INFO_AMOUNTFOR( result) = 0;
+
 
   DBUG_RETURN( result);
 }
@@ -93,7 +95,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
     initbody = TBmakeFunbody(NULL, NULL, NULL);
-    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), TRUE, FALSE, NULL, initbody, NULL, NULL);
+    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), FALSE, FALSE, NULL, initbody, NULL, NULL);
     declarations = TBmakeDeclarations(fundef, arg_node);
 
     INFO_FUNBODY(arg_info) = initbody;
@@ -146,7 +148,8 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node)= TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
-  if(INFO_COUNTFORS(arg_info) > 0){
+  //printf("aantal fors: %d", INFO_AMOUNTFOR(arg_info));
+  /*if(INFO_COUNTFORS(arg_info) > 0){
     for(int i = 0; i < INFO_COUNTFORS(arg_info); i++){
       node *stmts = TBmakeStmts(INFO_FORASSIGNS(arg_info)[i], FUNBODY_STATEMENT(arg_node));
       FUNBODY_STATEMENT(arg_node) = stmts; 
@@ -157,27 +160,12 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   }
   else{
     printf("geen for\n");
-  }
+  }*/
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 
 
   DBUG_RETURN(arg_node);
  }
-
- node *INITfor (node *arg_node, info *arg_info){
-  DBUG_ENTER("INITfor");
-  node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
-  node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
-  node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
-  node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
-  FOR_START(arg_node) = var;
-  vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
-  FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
-  INFO_FORASSIGNS(arg_info)[INFO_COUNTFORS(arg_info)] = assign;
-  INFO_COUNTFORS(arg_info) = INFO_COUNTFORS(arg_info) + 1;
-
- DBUG_RETURN(arg_node);
-}
 
   node *INITvardec (node *arg_node, info *arg_info){
       DBUG_ENTER("INITvardec");
@@ -209,10 +197,21 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
 node *INITstmts (node *arg_node, info *arg_info){
   DBUG_ENTER("INITstmts");
-  STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
-  STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
   DBUG_RETURN(arg_node);
  }
+node *INITfor (node *arg_node, info *arg_info){
+  DBUG_ENTER("INITfor");
+  node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
+  node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
+  node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
+  node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
+  FOR_START(arg_node) = var;
+  vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
+  FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
+  INFO_FORASSIGNS(arg_info)[INFO_AMOUNTFOR(arg_info)] = assign;
+  INFO_AMOUNTFOR(arg_info) = INFO_AMOUNTFOR(arg_info) + 1;
+  DBUG_RETURN(arg_node);
+}
 
 /*
  * Traversal start function

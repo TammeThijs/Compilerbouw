@@ -19,7 +19,6 @@
 #include "stdio.h"
 #include "str.h"
 #include "globals.h"
-#include "types_nodetype.h"
 
 struct INFO {
 	FILE *code;
@@ -342,14 +341,14 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 node *GBCglobaldef( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldef");
-	GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
+	/*GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
 	INFO_GLOBALVAR(arg_info)[INFO_GLOBALVARCOUNT(arg_info)] = arg_node;
 	INFO_GLOBALVARCOUNT(arg_info) = INFO_GLOBALVARCOUNT(arg_info) + 1;
 	if(GLOBALDEF_EXPORT(arg_node) == TRUE){
 		INFO_EXPORTVAR(arg_info)[INFO_EXPORTVARCOUNT(arg_info)] = arg_node;
 		INFO_EXPORTVARCOUNT(arg_info) = INFO_EXPORTVARCOUNT(arg_info) + 1;
 	}
-	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);
+	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);*/
 	DBUG_RETURN(arg_node);
 }
 
