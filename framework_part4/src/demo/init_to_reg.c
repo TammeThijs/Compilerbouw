@@ -166,7 +166,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
  node *INITfor (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfor");
-  node *vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, NULL);
+  node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
   node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
   node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
   node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
