@@ -1,7 +1,27 @@
-extern void printInt(int i);
-export int main(){
-	for(int i = 0, 5){
-		printInt(i);
-	}
-	return 0;
+extern void printInt(int val);
+extern void printNewlines(int num);
+
+void printBool(bool b) {
+    if(b) {
+        printInt(1);
+    } else {
+        printInt(0);
+    }
+
+    printNewlines(1);
+}
+
+bool t() {
+    printInt(1);
+    return true;
+}
+
+bool f() {
+    printInt(0);
+    return false;
+}
+
+export int main() {
+    printBool(t() || f());
+    return 0;
 }

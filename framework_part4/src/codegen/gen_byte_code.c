@@ -324,6 +324,9 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		}
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+		if(FUNDEF_TYPE(arg_node) == T_unknown){
+			fputs("   return\n", INFO_CODE(arg_info));
+		}
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
 	}
 
@@ -332,7 +335,6 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		INFO_EXPORTFUNCOUNT(arg_info) = INFO_EXPORTFUNCOUNT(arg_info) + 1;
 	}
 	if(FUNDEF_EXTERN(arg_node) == TRUE){
-		printf("function in de extern table stopppen\n");
 		INFO_IMPORTFUN(arg_info)[INFO_IMPORTFUNCOUNT(arg_info)] = arg_node;
 		INFO_IMPORTFUNCOUNT(arg_info) = INFO_IMPORTFUNCOUNT(arg_info) + 1;
 	}
@@ -770,6 +772,7 @@ node *GBCif( node *arg_node, info *arg_info){
 		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
 		command = STRcatn(3,"   jump ", buffer, "_end\n");
 		fputs(command, INFO_CODE(arg_info));
+		sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info)-1);
 		command = STRcat(buffer, "_else:\n");
 		fputs(command, INFO_CODE(arg_info));
 		IF_ELSEBLOCK(arg_node) = TRAVdo(IF_ELSEBLOCK(arg_node), arg_info);
@@ -783,6 +786,7 @@ node *GBCif( node *arg_node, info *arg_info){
 		command = STRcatn(3, "   jump ", buffer, "_end\n\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
+	sprintf(buffer, "%d", INFO_BRANCHCOUNT(arg_info));
 	command = STRcat(buffer, "_end:\n");
 	fputs(command, INFO_CODE(arg_info));
 	

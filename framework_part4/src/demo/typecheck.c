@@ -226,6 +226,7 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 	}
 	else if(exprType == T_int && castType == T_boolean){
 		node *expr = TBmakeBinop(BO_gt, CAST_EXPRESSION(arg_node), TBmakeNum(0));
+		BINOP_OPTYPE(expr) = T_int;
 		node *then = TBmakeBool(true);
 		node *other = TBmakeBool(false);
 		node *condexpr = TBmakeConditionexpr(expr, then, other);
@@ -233,6 +234,7 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 	}
 	else if(exprType == T_float && castType == T_boolean){
 		node *expr = TBmakeBinop(BO_gt, CAST_EXPRESSION(arg_node), TBmakeFloat(0.0));
+		BINOP_OPTYPE(expr) = T_float;
 		node *then = TBmakeBool(true);
 		node *other = TBmakeBool(false);
 		node *condexpr = TBmakeConditionexpr(expr, then, other);
@@ -290,7 +292,7 @@ node * CTbinop(node *arg_node, info *arg_info){
   	//rewrite or
 	else if(BINOP_OP(arg_node) == BO_or){
 		node *orthen = TBmakeBool(1);
-		arg_node = TBmakeConditionexpr(leftexpr, orthen, rightexpr);
+		arg_node = TBmakeConditionexpr(leftexpr, rightexpr, orthen);
 	}
 	DBUG_RETURN(arg_node);
 }
