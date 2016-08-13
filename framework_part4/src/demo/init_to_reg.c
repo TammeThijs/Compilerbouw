@@ -90,7 +90,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
     initbody = TBmakeFunbody(NULL, NULL, NULL);
-    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), FALSE, FALSE, NULL, initbody, NULL, NULL);
+    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), TRUE, FALSE, NULL, initbody, NULL, NULL);
     declarations = TBmakeDeclarations(fundef, arg_node);
 
     INFO_FUNBODY(arg_info) = initbody;
@@ -140,7 +140,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfunbody");
 
   INFO_ROOTNODE(arg_info) = arg_node;
-
+  
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node)= TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
@@ -148,6 +148,29 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
   DBUG_RETURN(arg_node);
  }
+
+ node *INITfor (node *arg_node, info *arg_info){
+  DBUG_ENTER("INITfor");
+  node *stmts;
+  node *vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, NULL);
+  node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
+  node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
+  node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
+  FOR_START(arg_node) = var;
+  vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
+  FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
+  
+  if(FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) == NULL){
+    stmts = TBmakeStmts(assign, NULL);
+    FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
+  }
+  else{
+   stmts = TBmakeStmts(assign, FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)));
+   FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts; 
+ }
+
+ DBUG_RETURN(arg_node);
+}
 
   node *INITvardec (node *arg_node, info *arg_info){
       DBUG_ENTER("INITvardec");
@@ -179,6 +202,8 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
 node *INITstmts (node *arg_node, info *arg_info){
   DBUG_ENTER("INITstmts");
+  STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
+  STMTS_NEXT(arg_node) = TRAVopt(STMTS_NEXT(arg_node), arg_info);
   DBUG_RETURN(arg_node);
  }
 

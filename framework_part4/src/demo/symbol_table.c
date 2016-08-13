@@ -21,17 +21,18 @@
 #include "str.h"
 #include "memory.h"
 #include "ctinfo.h"
+#include "types_nodetype.h"
 
 
  struct INFO {
   node *root_node;
-  int isFor;
+  int amountFor;
   int state;
 };
 
 #define INFO_ROOT_NODE(n) ((n)->root_node)
 #define INFO_STATE(n) ((n)->state)
-#define INFO_ISFOR(n) ((n)->isFor)
+#define INFO_AMOUNTFOR(n) ((n)->amountFor)
 
 #define RENAME_STR_SIZE 20
 
@@ -46,7 +47,7 @@ static info *MakeInfo(void)
 
   INFO_ROOT_NODE( result) = NULL;
   INFO_STATE( result) = 0;
-  INFO_ISFOR( result) = 0;
+  INFO_AMOUNTFOR( result) = 0;
 
   DBUG_RETURN( result);
 }
@@ -162,7 +163,7 @@ node *SYMfundef( node *arg_node, info *arg_info)
   
 
 //check which type root node is, and make new fsymbol table if there is none
-  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
+  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == N_program){
   
     if(PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
@@ -172,7 +173,7 @@ node *SYMfundef( node *arg_node, info *arg_info)
       PROGRAM_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
     }
   } 
-  else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
+  else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == N_fundef) {
     
      if(FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_FSYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = fsymbol;
@@ -220,7 +221,7 @@ node *SYMparam( node *arg_node, info * arg_info)
   PARAM_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //check type of root node of the moment, make a new symbol table if there is none
-  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 1){
+  if( NODE_TYPE(INFO_ROOT_NODE(arg_info)) == N_program){
       if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
@@ -228,7 +229,7 @@ node *SYMparam( node *arg_node, info * arg_info)
       SYMBOL_NEXT(symbol) = PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
       PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
-  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == 6) {
+  } else if(NODE_TYPE(INFO_ROOT_NODE(arg_info)) == N_fundef) {
      if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
       FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
     }
@@ -250,7 +251,7 @@ node *SYMparam( node *arg_node, info * arg_info)
 node *SYMfunbody( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMfunbody");
-  INFO_ISFOR(arg_info) = 0;
+  INFO_AMOUNTFOR(arg_info) = 0;
 
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
@@ -319,21 +320,32 @@ node *SYMfor( node *arg_node, info *arg_info)
 {
 	DBUG_ENTER("SYMfor");  
 
+  char *name;
+  char buffer[RENAME_STR_SIZE];
 
-	INFO_ISFOR(arg_info) = 1;
-	FOR_START(arg_node) = TRAVdo(FOR_START(arg_node), arg_info);
+  node *symbol = TBmakeSymbol(T_int, FOR_LOOPVAR(arg_node), INFO_STATE(arg_info), FALSE, FALSE, NULL);
+  snprintf(buffer, RENAME_STR_SIZE, "%p%d_", (void*)&symbol, INFO_AMOUNTFOR(arg_info));
 
-	INFO_STATE(arg_info) = INFO_STATE(arg_info)+1;		
+  name = STRcpy(SYMBOL_NAME( symbol));
+  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  FOR_LOOPVAR(arg_node) = SYMBOL_NAME(symbol);
+  INFO_AMOUNTFOR(arg_info) = INFO_AMOUNTFOR(arg_info) + 1;
 
+  //put symbol in right symbol table, check root node type first. 
+   
+  if(FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
+  FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+  }
+  else{
+  SYMBOL_NEXT(symbol) = FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info));
+  FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
+  }
 
+	FOR_BLOCK(arg_node) = TRAVopt(FOR_BLOCK(arg_node), arg_info);
 
-	if(FOR_BLOCK(arg_node) != NULL){
-		FOR_BLOCK(arg_node) = TRAVdo(FOR_BLOCK(arg_node), arg_info);
-	} else if (FOR_BLOCKSINGLE(arg_node) != NULL){
-		FOR_BLOCKSINGLE(arg_node) = TRAVdo(FOR_BLOCKSINGLE(arg_node), arg_info);
-	}
+	FOR_BLOCKSINGLE(arg_node) = TRAVopt(FOR_BLOCKSINGLE(arg_node), arg_info);
+	
 
-	INFO_STATE(arg_info) = INFO_STATE(arg_info)-1;
 
 	DBUG_RETURN(arg_node);
 }

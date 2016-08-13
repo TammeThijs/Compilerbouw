@@ -229,7 +229,7 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 		BINOP_OPTYPE(expr) = T_int;
 		node *then = TBmakeBool(true);
 		node *other = TBmakeBool(false);
-		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		node *condexpr = TBmakeConditionexpr(expr, other, then);
 		arg_node = condexpr;
 	}
 	else if(exprType == T_float && castType == T_boolean){
@@ -237,7 +237,7 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 		BINOP_OPTYPE(expr) = T_float;
 		node *then = TBmakeBool(true);
 		node *other = TBmakeBool(false);
-		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		node *condexpr = TBmakeConditionexpr(expr, other, then);
 		arg_node = condexpr;
 	}
 

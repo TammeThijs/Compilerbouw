@@ -1,27 +1,14 @@
 extern void printInt(int val);
+extern void printSpaces(int num);
 extern void printNewlines(int num);
 
-void printBool(bool b) {
-    if(b) {
-        printInt(1);
-    } else {
-        printInt(0);
+export int main() {
+    for(int j=0, 4) {
+        printInt(j);
+        printSpaces(1);
     }
 
-    printNewlines(1);
-}
+    
 
-bool t() {
-    printInt(1);
-    return true;
-}
-
-bool f() {
-    printInt(0);
-    return false;
-}
-
-export int main() {
-    printBool(t() || f());
     return 0;
 }

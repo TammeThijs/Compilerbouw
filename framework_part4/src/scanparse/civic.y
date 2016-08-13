@@ -235,19 +235,19 @@ if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX
 
 for:    FOR BRACKET_L INT ID LET expr COMMA expr COMMA expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeFor($4, TBmakeVardec(T_int, $4, NULL, $6, NULL), $8, $10, $13, NULL);
+          $$ = TBmakeFor($4, $6, $8, $10, $13, NULL);
         }
         | FOR BRACKET_L INT ID LET expr COMMA expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeFor( $4, TBmakeVardec(T_int, $4, NULL, $6, NULL), $8, NULL, $11, NULL);
+          $$ = TBmakeFor( $4, $6, $8, NULL, $11, NULL);
         }
         | FOR BRACKET_L INT ID LET expr COMMA expr COMMA expr BRACKET_R stmt
         {
-          $$ = TBmakeFor( $4, TBmakeVardec(T_int, $4, NULL, $6, NULL), $8, $10, NULL, $12);
+          $$ = TBmakeFor( $4, $6, $8, $10, NULL, $12);
         }
         | FOR BRACKET_L INT ID LET expr COMMA expr BRACKET_R stmt
         {
-          $$ = TBmakeFor( $4, TBmakeVardec(T_int, $4, NULL, $6, NULL), $8, NULL, NULL, $10);
+          $$ = TBmakeFor( $4, $6, $8, NULL, NULL, $10);
         }
         ;
 

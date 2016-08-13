@@ -65,6 +65,7 @@
             <node name="FunBody"/>
             <node name="VarDec" />
             <node name="Stmts" />
+            <node name="For" />
           </travuser>
         </traversal>
 
@@ -926,7 +927,7 @@
     <son name="Start">
       <targets>
         <target mandatory="yes">
-          <node name="VarDec" />
+          <set name="Expr" />
           <phases>
             <all />
           </phases>
