@@ -26,6 +26,8 @@
   node *rootNode;
   node *funBody;
   node *stmtStack [20];
+  node *forassigns [20];
+  int countfors;
   int firstTime;
   int count;
 };
@@ -35,7 +37,8 @@
 #define INFO_QUEUE(n) ((n)->stmtStack)
 #define INFO_COUNTER(n) ((n)->count)
 #define INFO_FIRSTTIME(n) ((n)->firstTime)
-
+#define INFO_FORASSIGNS(n) ((n)->forassigns)
+#define INFO_COUNTFORS(n) ((n)->countfors)
 
 info *enqueue(info * arg_info, node *stmt){
   INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
@@ -61,7 +64,7 @@ static info *MakeInfo(void)
   INFO_FUNBODY( result) = NULL;
   INFO_COUNTER( result) = 0;
   INFO_FIRSTTIME( result) = 0;
-
+  INFO_COUNTFORS( result) = 0;
 
   DBUG_RETURN( result);
 }
@@ -140,9 +143,21 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfunbody");
 
   INFO_ROOTNODE(arg_info) = arg_node;
-  
+
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node)= TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
+  if(INFO_COUNTFORS(arg_info) > 0){
+    for(int i = 0; i < INFO_COUNTFORS(arg_info); i++){
+      node *stmts = TBmakeStmts(INFO_FORASSIGNS(arg_info)[i], FUNBODY_STATEMENT(arg_node));
+      FUNBODY_STATEMENT(arg_node) = stmts; 
+      INFO_FORASSIGNS(arg_info)[i] = NULL;
+      printf("assign toevoegen aan statements in funbody\n");
+    }
+    INFO_COUNTFORS(arg_info) = 0;
+  }
+  else{
+    printf("geen for\n");
+  }
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 
 
@@ -151,7 +166,6 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
  node *INITfor (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfor");
-  node *stmts;
   node *vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, NULL);
   node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
   node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
@@ -159,15 +173,8 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   FOR_START(arg_node) = var;
   vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
   FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
-  
-  if(FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) == NULL){
-    stmts = TBmakeStmts(assign, NULL);
-    FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
-  }
-  else{
-   stmts = TBmakeStmts(assign, FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)));
-   FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts; 
- }
+  INFO_FORASSIGNS(arg_info)[INFO_COUNTFORS(arg_info)] = assign;
+  INFO_COUNTFORS(arg_info) = INFO_COUNTFORS(arg_info) + 1;
 
  DBUG_RETURN(arg_node);
 }

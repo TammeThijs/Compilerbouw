@@ -159,7 +159,6 @@ node *LINKvar(node *arg_node, info *arg_info){
 
 node *LINKassign( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKassign");
-
   ASSIGN_LET(arg_node) =  TRAVdo(ASSIGN_LET( arg_node), arg_info);
   ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info); 
   DBUG_RETURN(arg_node);

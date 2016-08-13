@@ -2,6 +2,8 @@ __init:
 
 main:
    esr 1
+   iloadc_0
+   istore 0
 1_for:
    iload_0
    iloadc 0

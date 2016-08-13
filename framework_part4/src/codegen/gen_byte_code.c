@@ -257,7 +257,6 @@ node *GBCfundefs(node *arg_node, info *arg_info){
 
 //check if function name = main, if so then traverse
 node *GBCfundef(node *arg_node, info *arg_info){
-	printf("in de fundef");
 	DBUG_ENTER("GBCfundef");
 	char *main_name = "main";
 	char *init_name = "__init";
@@ -296,7 +295,6 @@ node *GBCfundef(node *arg_node, info *arg_info){
 	}
 	//check if it is main
 	if(STReq(FUNDEF_NAME(arg_node), main_name)){
-		printf("main maken\n");
 		fputs("main:\n", INFO_CODE(arg_info));
 		if(locals > 0){
 			sprintf(buffer, "%d", locals);
@@ -311,7 +309,6 @@ node *GBCfundef(node *arg_node, info *arg_info){
 		
 	}
 	else if(STReq(FUNDEF_NAME(arg_node), init_name) && FUNDEF_FUNBODY(arg_node)!= NULL){
-		printf("init maken");
 		fputs("__init:\n", INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 	}
@@ -345,7 +342,6 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 node *GBCglobaldef( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldef");
-	printf("in de globaldef");
 	GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
 	INFO_GLOBALVAR(arg_info)[INFO_GLOBALVARCOUNT(arg_info)] = arg_node;
 	INFO_GLOBALVARCOUNT(arg_info) = INFO_GLOBALVARCOUNT(arg_info) + 1;
@@ -411,7 +407,6 @@ node *GBCexprs( node *arg_node, info *arg_info){
 node *GBCstmts( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCstmts");
 	if(NODE_TYPE(STMTS_STMT(arg_node)) == N_return){
-		printf("na de return niet meer verder gaan\n");
 		STMTS_STMT(arg_node) = TRAVdo(STMTS_STMT(arg_node), arg_info);
 	}
 	else{
@@ -436,7 +431,6 @@ node *GBCvardec( node *arg_node, info *arg_info){
 //traverse over assign
 node *GBCassign( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCassign");
-	printf("in de assign");
 	ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
 	ASSIGN_LET(arg_node) = TRAVdo(ASSIGN_LET(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
