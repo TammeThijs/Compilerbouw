@@ -122,7 +122,7 @@ static int rangeCheck( char *integer)
 
   output = strtol(integer, NULL, 10);
 
-  printf("Test %ld\n", output);
+
 
   if(errno || output >= INT_MAX || output <= INT_MIN){
     yyerror("Integer out of range");

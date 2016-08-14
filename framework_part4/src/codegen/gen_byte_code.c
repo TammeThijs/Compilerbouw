@@ -31,13 +31,13 @@ struct INFO {
 	int exportvarcount;
 	int globalvarcount;
 	int globalvarletcount;
+	int globalsymbolcount;
 	node *consts [50];
 	node *exportfun [50];
 	node *importfun [50];
 	node *importvar [50];
 	node *exportvar [50];
 	node *globalvar [50];
-	node * root;
 	int scope;
 };
 
@@ -51,6 +51,7 @@ struct INFO {
 #define INFO_EXPORTVARCOUNT(n) ((n)->exportvarcount)
 #define INFO_GLOBALVARCOUNT(n) ((n)->globalvarcount)
 #define INFO_GLOBALVARLETCOUNT(n) ((n)->globalvarletcount)
+#define INFO_GLOBALSYMBOLCOUNT(n) ((n)->globalsymbolcount)
 #define INFO_CONSTS(n) ((n)->consts)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_IMPORTFUN(n) ((n)->importfun)
@@ -58,7 +59,7 @@ struct INFO {
 #define INFO_EXPORTVAR(n) ((n)->exportvar)
 #define INFO_GLOBALVAR(n) ((n)->globalvar)
 #define INFO_SCOPE(n) ((n)->scope)
-#define INFO_ROOT(n) ((n)->root)
+
 
 static info *MakeInfo(void)
 {
@@ -76,9 +77,10 @@ static info *MakeInfo(void)
 	INFO_IMPORTVARCOUNT(result) = 0;
 	INFO_EXPORTVARCOUNT(result) = 0;
 	INFO_GLOBALVARCOUNT(result) = 0;
+	INFO_GLOBALSYMBOLCOUNT( result) = 0;
 	INFO_GLOBALVARLETCOUNT( result) = 0;
 	INFO_SCOPE(result) = -1;
-	INFO_ROOT(result) = NULL;
+	
 	DBUG_RETURN( result);
 }
 
@@ -94,7 +96,19 @@ static info *FreeInfo( info *info)
 node *GBCprogram(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCprogram");
 	printf("in het programma\n");
-	INFO_ROOT(arg_info) = arg_node;
+	if(PROGRAM_SYMBOLTABLE(arg_node) != NULL){
+		printf("global symbols tellen...\n");
+		node *symbol = PROGRAM_SYMBOLTABLE(arg_node);
+		if(!SYMBOL_EXTERN(symbol)){
+			INFO_GLOBALSYMBOLCOUNT(arg_info) = INFO_GLOBALSYMBOLCOUNT(arg_info) + 1;
+		}
+		while(SYMBOL_NEXT(symbol) != NULL){
+			symbol = SYMBOL_NEXT(symbol);
+			if(!SYMBOL_EXTERN(symbol)){
+				INFO_GLOBALSYMBOLCOUNT(arg_info) = INFO_GLOBALSYMBOLCOUNT(arg_info) + 1;
+			}
+		}
+	}
 	PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 	char buffer[20];
 	char *command;
@@ -113,7 +127,7 @@ node *GBCprogram(node *arg_node, info *arg_info){
 		}
 	}
 	for(int i = 0; i<INFO_EXPORTFUNCOUNT(arg_info); i++){
-		if(!(STReq(FUNDEF_NAME(INFO_EXPORTFUN(arg_info)[i]), "__init") && PROGRAM_SYMBOLTABLE(arg_node)== NULL)){
+		if(!(STReq(FUNDEF_NAME(INFO_EXPORTFUN(arg_info)[i]), "__init") && INFO_GLOBALSYMBOLCOUNT(arg_info) == 0)){
 			printf("export fun table maken\n");
 		node *fun = INFO_EXPORTFUN(arg_info)[i];
 		command = STRcatn(4, ".exportfun ", "\"", FUNDEF_NAME(fun), "\" ");
@@ -317,7 +331,7 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 		
 	}
-	else if(STReq(FUNDEF_NAME(arg_node), init_name) && PROGRAM_SYMBOLTABLE(INFO_ROOT(arg_info)) != NULL){
+	else if(STReq(FUNDEF_NAME(arg_node), init_name) && INFO_GLOBALSYMBOLCOUNT(arg_info) > 0){
 		fputs("__init:\n", INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 	}
