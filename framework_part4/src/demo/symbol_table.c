@@ -102,14 +102,8 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
 {
   DBUG_ENTER("SYMglobaldec");
 
-  char *name;
-  char buffer[RENAME_STR_SIZE];
-
   node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), STRcpy(GLOBALDEC_NAME( arg_node)), INFO_STATE(arg_info), TRUE, FALSE, NULL);
-  //snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
-  name = STRcpy(SYMBOL_NAME( symbol));
-  //SYMBOL_NAME( symbol) = STRcat(buffer , name);
   GLOBALDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //if there is no program symboltable then make one.
@@ -121,7 +115,6 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
 
-  MEMfree(name); 
 
   DBUG_RETURN(arg_node);
 }
@@ -131,8 +124,6 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
 {
   DBUG_ENTER("SYMglobaldef");
 
-  char *name;
-  char buffer[RENAME_STR_SIZE];
   node *symbol;
   if(GLOBALDEF_EXPORT(arg_node) == TRUE){
     symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), FALSE, TRUE, NULL);
@@ -141,10 +132,6 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
     symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), FALSE, FALSE, NULL);
   }
   
-  //snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
-
-  name = STRcpy(SYMBOL_NAME( symbol));
-  //SYMBOL_NAME( symbol) = STRcat(buffer , name);
   GLOBALDEF_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //make a symbol table if there is none.
@@ -156,7 +143,6 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
 
-  MEMfree(name); 
   DBUG_RETURN(arg_node);
 }
 
@@ -346,7 +332,6 @@ node *SYMfor( node *arg_node, info *arg_info)
   sprintf(buffercount, "%d", INFO_FORCOUNT(arg_info)[INFO_FORINFORCOUNT(arg_info)]);
   name = STRcpy(SYMBOL_NAME( symbol));
   SYMBOL_NAME( symbol) = STRcatn(3, buffer , name, buffercount);
-  printf("for variabele hernoemd: %s", SYMBOL_NAME(symbol));
   VARDEC_NAME(vardec) = SYMBOL_NAME(symbol);
 
   node *tmpvar = TBmakeVar(SYMBOL_NAME(symbol), NULL);
@@ -386,7 +371,6 @@ node *SYMvar(node *arg_node, info *arg_info){
     char buffer[5];
     sprintf(buffer, "%d", INFO_FORCOUNT(arg_info)[INFO_FORINFORCOUNT(arg_info)]);
     VAR_NAME(arg_node) = STRcat(VAR_NAME(arg_node), buffer);
-    printf("nieuwe var name: %s\n", VAR_NAME(arg_node));
   }
   else if(INFO_FORINFORCOUNT(arg_info) > 1){
     for(int i = INFO_FORINFORCOUNT(arg_info); i >0; i--){
@@ -394,7 +378,6 @@ node *SYMvar(node *arg_node, info *arg_info){
       char buffer[5];
       sprintf(buffer, "%d", INFO_FORCOUNT(arg_info)[i]);
       VAR_NAME(arg_node) = STRcat(VAR_NAME(arg_node), buffer);
-      printf("nieuwe var name: %s\n", VAR_NAME(arg_node));
   }
     }
   }

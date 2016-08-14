@@ -84,7 +84,7 @@ static info *FreeInfo( info *info)
  * Traversal functions
  */
 
-node *INITdeclarations (node *arg_node, info *arg_info){
+ node *INITdeclarations (node *arg_node, info *arg_info){
   DBUG_ENTER("INITdeclarations");
 
   node *stmts;
@@ -114,34 +114,34 @@ node *INITdeclarations (node *arg_node, info *arg_info){
     FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = lastStmt;
 
     while(INFO_COUNTER(arg_info) >0){
-          node *assign = dequeue(arg_info);  
-          stmts = TBmakeStmts(assign, lastStmt);
-          FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = stmts;
-          lastStmt = stmts;
+      node *assign = dequeue(arg_info);  
+      stmts = TBmakeStmts(assign, lastStmt);
+      FUNBODY_STATEMENT(INFO_FUNBODY(arg_info)) = stmts;
+      lastStmt = stmts;
     }
   } 
-   
+  
 
   DBUG_RETURN(arg_node);
- }
+}
 
 
- node *INITglobaldef (node *arg_node, info *arg_info){
+node *INITglobaldef (node *arg_node, info *arg_info){
   DBUG_ENTER("INITglobaldef");
 
   if(GLOBALDEF_INIT(arg_node) != NULL){
-      node *varlet = TBmakeVarlet(STRcpy(GLOBALDEF_NAME(arg_node)), NULL);
-      node *assign = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
-      arg_info = enqueue(arg_info, assign);
+    node *varlet = TBmakeVarlet(STRcpy(GLOBALDEF_NAME(arg_node)), NULL);
+    node *assign = TBmakeAssign(varlet, GLOBALDEF_INIT(arg_node));
+    arg_info = enqueue(arg_info, assign);
   }
 
   node *returnNode = TBmakeGlobaldef(GLOBALDEF_TYPE(arg_node), GLOBALDEF_NAME(arg_node), GLOBALDEF_EXPORT(arg_node), GLOBALDEF_DIMS(arg_node), NULL);
 
 
   DBUG_RETURN(returnNode);
- }
+}
 
- node *INITfunbody (node *arg_node, info *arg_info){
+node *INITfunbody (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfunbody");
 
   INFO_ROOTNODE(arg_info) = arg_node;
@@ -152,61 +152,45 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
 
   DBUG_RETURN(arg_node);
- }
-
-  node *INITvardec (node *arg_node, info *arg_info){
-      DBUG_ENTER("INITvardec");
-
-    if(VARDEC_INIT(arg_node) != NULL){
-
-      node *stmts;
-      node *vardec = TBmakeVardec(VARDEC_TYPE(arg_node), VARDEC_NAME(arg_node), NULL, NULL, VARDEC_NEXT(arg_node));
-      node *varlet = TBmakeVarlet(VARDEC_NAME(arg_node), NULL);
-      node *assign = TBmakeAssign(varlet, VARDEC_INIT(arg_node));
-      ASSIGN_VARDECNAME(assign) = STRcpy(VARDEC_NAME(arg_node));
-
-       if(FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) == NULL){
-        stmts = TBmakeStmts(assign, NULL);
-        FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
-      }
-       else{
-         stmts = TBmakeStmts(assign, FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)));
-         FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts; 
-      }
-
-      VARDEC_NEXT( vardec) = TRAVopt( VARDEC_NEXT( vardec), arg_info);
-      DBUG_RETURN(vardec);
-    }
-
-    VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
-    DBUG_RETURN(arg_node);
-
-  }
-
-node *INITstmts (node *arg_node, info *arg_info){
-  DBUG_ENTER("INITstmts");
-  DBUG_RETURN(arg_node);
- }
-node *INITfor (node *arg_node, info *arg_info){
-  DBUG_ENTER("INITfor");
- /* node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
-  node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
-  node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
-  node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
-  FOR_START(arg_node) = var;
-  vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
-  FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
-  INFO_FORASSIGNS(arg_info)[INFO_AMOUNTFOR(arg_info)] = assign;
-  INFO_AMOUNTFOR(arg_info) = INFO_AMOUNTFOR(arg_info) + 1;*/
-  DBUG_RETURN(arg_node);
 }
+
+node *INITvardec (node *arg_node, info *arg_info){
+  DBUG_ENTER("INITvardec");
+
+  if(VARDEC_INIT(arg_node) != NULL){
+
+    node *stmts;
+    node *vardec = TBmakeVardec(VARDEC_TYPE(arg_node), VARDEC_NAME(arg_node), NULL, NULL, VARDEC_NEXT(arg_node));
+    node *varlet = TBmakeVarlet(VARDEC_NAME(arg_node), NULL);
+    node *assign = TBmakeAssign(varlet, VARDEC_INIT(arg_node));
+    ASSIGN_VARDECNAME(assign) = STRcpy(VARDEC_NAME(arg_node));
+
+    if(FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) == NULL){
+      stmts = TBmakeStmts(assign, NULL);
+      FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts;
+    }
+    else{
+     stmts = TBmakeStmts(assign, FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)));
+     FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) = stmts; 
+   }
+
+   VARDEC_NEXT( vardec) = TRAVopt( VARDEC_NEXT( vardec), arg_info);
+   DBUG_RETURN(vardec);
+ }
+
+ VARDEC_NEXT( arg_node) = TRAVopt( VARDEC_NEXT( arg_node), arg_info);
+ DBUG_RETURN(arg_node);
+
+}
+
+
 
 /*
  * Traversal start function
  */
 
-node *INITdoInitToReg( node *syntaxtree)
-{
+ node *INITdoInitToReg( node *syntaxtree)
+ {
 
   info *arg_info;
 

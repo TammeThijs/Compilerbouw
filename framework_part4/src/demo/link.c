@@ -153,15 +153,15 @@ node *LINKfundef( node *arg_node, info *arg_info){
 
 node *LINKfunbody (node *arg_node, info *arg_info){
   DBUG_ENTER("LINKfunbody");
- 
+
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node)= TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info); 
- 
+
   INFO_VARLETCOUNT(arg_info) = 0;
   memset(INFO_VARLETSTACK(arg_info), 0, 20);
   DBUG_RETURN(arg_node);
- }
+}
 
 //search var in symbol tables and fill link or give error
 node *LINKvar(node *arg_node, info *arg_info){
@@ -206,7 +206,7 @@ node *LINKvar(node *arg_node, info *arg_info){
         }
       }
       else{
-          symbol = SYMBOL_NEXT(symbol);
+        symbol = SYMBOL_NEXT(symbol);
       }
     }
   }
@@ -268,7 +268,7 @@ node *LINKvarlet(node *arg_node, info *arg_info){
         SYMBOL_STATE(symbol) = -1;     
       }
       else{
-          symbol = SYMBOL_NEXT(symbol);
+        symbol = SYMBOL_NEXT(symbol);
       }
     }
   }
@@ -305,7 +305,7 @@ node *LINKfuncall(node *arg_node, info *arg_info){
         found = true;
       }
       else{
-          fsymbol = FSYMBOL_NEXT(fsymbol);
+        fsymbol = FSYMBOL_NEXT(fsymbol);
       }
     }
   }
@@ -364,14 +364,13 @@ node *LINKcreatelinks( node *syntaxtree)
 }
 
 static int checkArray(int size,  char *varlet, char *array[100])
-{   printf("NIEUWE FUNCTIE: %s\n", varlet);
- 
-  for(int i = 0; i < size; i++){
-    printf("Array: %s\n", array[i]);
-    if(STReq(varlet, array[i])){
-      return 1;
-    }
+{   
+
+for(int i = 0; i < size; i++){
+  if(STReq(varlet, array[i])){
+    return 1;
   }
- 
-  return 0;
+}
+
+return 0;
 }

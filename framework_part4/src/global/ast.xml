@@ -66,8 +66,6 @@
             <node name="GlobalDef"/>
             <node name="FunBody"/>
             <node name="VarDec" />
-            <node name="Stmts" />
-            <node name="For" />
           </travuser>
         </traversal>
 

@@ -1,133 +1,128 @@
 main:
-   esr 2
-   iloadc 0
+   esr 6
+   iloadc_0
    istore 0
-   iload_0
+   iloadc 0
    istore 1
-   isrl
+   iloadc_0
+   istore 2
+   iloadc 1
+   istore 3
+   iloadc_0
+   istore 4
+   iloadc_0
+   istore 5
+   jump 1_for
+1_for:
    iload_0
-   jsr 1 _main_bar
+   iloadc 0
+   ilt
+   branch_f 2_end
    isrg
    iload_0
    jsre 0
    isrg
-   iloadc 1
+   iloadc_1
+   jsre 1
+   iinc_1 0
+   jump 1_for
+2_end: 
+   isrg
+   iloadc_1
    jsre 2
-   isrg
-   iload_0
-   jsr 1 baz
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc 1
-   jsre 2
-   isrg
-   iload_0
-   jsr 1 bor
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc 1
-   jsre 2
-   isrl
-   jsr 0 _main_boz
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc 1
-   jsre 2
-   isrg
+   jump 3_for
+3_for:
    iload_1
-   jsre 0
-   isrg
-   iloadc 1
-   jsre 2
-   isrl
-   jsr 0 _main_biz
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc 1
-   jsre 2
+   iloadc_0
+   igt
+   branch_f 4_end
    isrg
    iload_1
    jsre 0
    isrg
    iloadc_1
+   jsre 1
+   idec_1 1
+   jump 3_for
+4_end: 
+   isrg
+   iloadc_1
    jsre 2
+   jump 5_for
+5_for:
+   iload_2
+   iloadc 0
+   ilt
+   branch_f 6_end
+   isrg
+   iload_2
+   jsre 0
+   isrg
+   iloadc_1
+   jsre 1
+   iinc 2  2
+   jump 5_for
+6_end: 
+   isrg
+   iloadc_1
+   jsre 2
+   jump 7_for
+7_for:
+   iload_3
+   iloadc_0
+   igt
+   branch_f 8_end
+   isrg
+   iload_3
+   jsre 0
+   isrg
+   iloadc_1
+   jsre 1
+   idec 3  3
+   jump 7_for
+8_end: 
+   jump 9_for
+9_for:
+   iload 4
+   iloadc 4
+   ilt
+   branch_f 10_end
+   jump 11_for
+11_for:
+   iload 5
+   iloadc 5
+   ilt
+   branch_f 12_end
+   isrg
+   iload 4
+   jsre 0
+   isrg
+   iloadc_1
+   jsre 1
+   isrg
+   iload 5
+   jsre 0
+   isrg
+   iloadc_1
+   jsre 1
+   iinc_1 5
+   jump 11_for
+12_end: 
+   isrg
+   iloadc_1
+   jsre 2
+   iinc_1 4
+   jump 9_for
+10_end: 
    iloadc_0
    ireturn
 
-_main_bar:
-   iloadc 2
-   istore 0
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc_1
-   jsre 2
-   return
-_main_boz:
-   esr 1
-   iloadn 1 0
-   istore 0
-   iload_0
-   iloadc 2
-   iadd
-   istore 0
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc_1
-   jsre 2
-   return
-_main_biz:
-   iloadc 3
-   istoren 0 0
-   return
-baz:
-   isrl
-   jsr 0 _baz_baz_inner
-   return
-_baz_baz_inner:
-   esr 1
-   iloadc 4
-   istore 0
-   isrg
-   iload_0
-   jsre 0
-   isrg
-   iloadc_1
-   jsre 2
-   return
-bor:
-   isrl
-   jsr 0 _bor_baz_inner
-   return
-_bor_baz_inner:
-   isrl
-   jsr 0 __bor_baz_inner_b
-   return
-__bor_baz_inner_b:
-   isrg
-   iloadc 5
-   jsre 0
-   isrg
-   iloadc_1
-   jsre 2
-   return
-.const int  123
+.const int  10
+.const int  7
 .const int  2
-.const int  11111
-.const int  55555
-.const int  22222
-.const int  33333
+.const int  3
+.const int  5
+.const int  4
 .exportfun "main" int main
 .importfun "printInt" void int 
 .importfun "printSpaces" void int 
