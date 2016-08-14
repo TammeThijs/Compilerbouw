@@ -27,6 +27,8 @@
  struct INFO {
   node *symboltableStack [20];
   node *functionList[20];
+  char *vardecName;
+  int varFromVardec;
   int top;
   int size;
   int scope;
@@ -35,6 +37,8 @@
 
 #define INFO_STACK(n) ((n)->symboltableStack)
 #define INFO_LIST(n) ((n)->functionList)
+#define INFO_FROMVARDEC(n) ((n)->varFromVardec)
+#define INFO_VARDECNAME(n) ((n)->vardecName)
 #define INFO_TOP(n) ((n)->top)
 #define INFO_SIZE(n) ((n)->size)
 #define INFO_SCOPE(n) ((n)->scope)
@@ -69,6 +73,8 @@ static info *MakeInfo(void)
   INFO_SIZE(result) = 20;
   INFO_SCOPE( result) = 0;
   INFO_COUNTER( result) = 0;
+  INFO_FROMVARDEC( result) = 0;
+  INFO_VARDECNAME( result) = NULL;
   DBUG_RETURN( result);
 }
 
@@ -137,11 +143,21 @@ node *LINKvar(node *arg_node, info *arg_info){
     else{
       char *symbolName = SYMBOL_NAME(symbol);
       char *varName = VAR_NAME(arg_node);
+      printf("SYMBOLNAME %s\n", symbolName);
+      printf("Varname %s\n", varName);
+
       if(STRsuffix(varName, symbolName)){
-        VAR_DECL(arg_node) = symbol;
-        VAR_NAME(arg_node) = SYMBOL_NAME(symbol);
-        found = true;
-        SYMBOL_STATE(symbol) = -1;
+        if(STReq(symbolName, INFO_VARDECNAME(arg_info))){
+          printf("Ze zijn gelijk\n");
+          symbol = SYMBOL_NEXT(symbol);
+        } else {       
+          printf("GEVONDEN\n");
+          VAR_DECL(arg_node) = symbol;
+          VAR_NAME(arg_node) = SYMBOL_NAME(symbol);
+          printf("SYMBOL NAME%s\n", SYMBOL_NAME(symbol));
+          found = true;
+          SYMBOL_STATE(symbol) = -1;
+        }
       }
       else{
           symbol = SYMBOL_NEXT(symbol);
@@ -159,8 +175,19 @@ node *LINKvar(node *arg_node, info *arg_info){
 
 node *LINKassign( node *arg_node, info *arg_info){
   DBUG_ENTER("LINKassign");
+
+  if(ASSIGN_VARDECNAME(arg_node) != NULL){
+    INFO_FROMVARDEC(arg_info) = 1;
+    INFO_VARDECNAME(arg_info) = STRcpy(ASSIGN_VARDECNAME(arg_node));
+    printf("VARDEC NAME %s\n", INFO_VARDECNAME(arg_info));
+  }
+
   ASSIGN_LET(arg_node) =  TRAVdo(ASSIGN_LET( arg_node), arg_info);
-  ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info); 
+  ASSIGN_EXPR(arg_node) = TRAVdo(ASSIGN_EXPR(arg_node), arg_info);
+
+  INFO_FROMVARDEC(arg_info) = 1;
+  INFO_VARDECNAME(arg_info) = NULL;
+
   DBUG_RETURN(arg_node);
 }
 
