@@ -32,6 +32,7 @@ struct INFO {
 	int globalvarcount;
 	int globalvarletcount;
 	int globalsymbolcount;
+	type fundeftype;
 	node *consts [50];
 	node *exportfun [50];
 	node *importfun [50];
@@ -52,6 +53,7 @@ struct INFO {
 #define INFO_GLOBALVARCOUNT(n) ((n)->globalvarcount)
 #define INFO_GLOBALVARLETCOUNT(n) ((n)->globalvarletcount)
 #define INFO_GLOBALSYMBOLCOUNT(n) ((n)->globalsymbolcount)
+#define INFO_FUNDEFTYPE(n) ((n)->fundeftype)
 #define INFO_CONSTS(n) ((n)->consts)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_IMPORTFUN(n) ((n)->importfun)
@@ -80,6 +82,7 @@ static info *MakeInfo(void)
 	INFO_GLOBALSYMBOLCOUNT( result) = 0;
 	INFO_GLOBALVARLETCOUNT( result) = 0;
 	INFO_SCOPE(result) = -1;
+	INFO_FUNDEFTYPE( result) = T_int;
 	
 	DBUG_RETURN( result);
 }
@@ -345,10 +348,9 @@ node *GBCfundef(node *arg_node, info *arg_info){
 			fputs(command, INFO_CODE(arg_info));
 		}
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
+		INFO_FUNDEFTYPE(arg_info) = FUNDEF_TYPE(arg_node);
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
-		if(FUNDEF_TYPE(arg_node) == T_unknown){
-			fputs("   return\n", INFO_CODE(arg_info));
-		}
+		
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
 	}
 
@@ -380,7 +382,7 @@ node *GBCglobaldef( node *arg_node, info *arg_info){
 
 node *GBCglobaldec( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldec");
-	printf("in de gobaldec \n");
+	
 	GLOBALDEC_DIMS(arg_node) = TRAVopt(GLOBALDEC_DIMS(arg_node), arg_info);
 	INFO_IMPORTVAR(arg_info)[INFO_IMPORTVARCOUNT(arg_info)] = arg_node;
 	INFO_IMPORTVARCOUNT(arg_info) = INFO_IMPORTVARCOUNT(arg_info) + 1;
@@ -398,7 +400,12 @@ node *GBCfunbody( node *arg_node, info *arg_info){
 	FUNBODY_VARDEC(arg_node) = TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
 	FUNBODY_STATEMENT(arg_node) = TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
 	INFO_VARCOUNT(arg_info) = 0;
-	fputs("\n", INFO_CODE(arg_info));
+	if(INFO_FUNDEFTYPE(arg_info) == T_unknown){
+			fputs("   return\n", INFO_CODE(arg_info));
+	}
+	else{
+		fputs("\n", INFO_CODE(arg_info));
+	}
 	FUNBODY_LOCALFUNDEFS(arg_node) = TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
@@ -521,6 +528,7 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	BINOP_LEFT(arg_node) = TRAVdo(BINOP_LEFT(arg_node), arg_info);
 	BINOP_RIGHT(arg_node) = TRAVdo(BINOP_RIGHT(arg_node), arg_info);
 	char *type;
+	char *ass;
 	if(BINOP_OPTYPE(arg_node) == T_int){
 		type = "i";
 	}
@@ -532,48 +540,39 @@ node *GBCbinop( node *arg_node, info *arg_info){
 	}
 	//check which operand you have to write down
 	if(BINOP_OP(arg_node) == BO_add){
-		char *ass = STRcatn(3, "   ", type, "add\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "add\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_mul){
-		char *ass = STRcatn(3, "   ", type, "mul\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "mul\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_sub){
-		char *ass = STRcatn(3, "   ", type, "sub\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "sub\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_div){
-		char *ass = STRcatn(3, "   ", type, "div\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "div\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_mod){
-		fputs("   irem\n", INFO_CODE(arg_info));
+		ass = "   irem\n";
 	}
 	else if(BINOP_OP(arg_node) == BO_lt){
-		char *ass = STRcatn(3, "   ", type, "lt\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "lt\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_le){
-		char *ass = STRcatn(3, "   ", type, "le\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "le\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_gt){
-		char *ass = STRcatn(3, "   ", type, "gt\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "gt\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_ge){
-		char *ass = STRcatn(3, "   ", type, "ge\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "ge\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_eq){
-		char *ass = STRcatn(3, "   ", type, "eq\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "eq\n");
 	}
 	else if(BINOP_OP(arg_node) == BO_ne){
-		char *ass = STRcatn(3, "   ", type, "ne\n");
-		fputs(ass, INFO_CODE(arg_info));
+		ass = STRcatn(3, "   ", type, "ne\n");
 	}
+	fputs(ass, INFO_CODE(arg_info));
 	DBUG_RETURN(arg_node);
 }
 
@@ -796,7 +795,7 @@ node *GBCconditionexpr( node *arg_node, info *arg_info){
 
 node *GBCexprstmt( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCexprstmt");
-	printf("in de exprstmt \n");
+	
 	EXPRSTMT_EXPR(arg_node) = TRAVdo(EXPRSTMT_EXPR(arg_node), arg_info);
 	if(FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(EXPRSTMT_EXPR(arg_node)))) == T_int){
 		fputs("   ipop\n", INFO_CODE(arg_info));
