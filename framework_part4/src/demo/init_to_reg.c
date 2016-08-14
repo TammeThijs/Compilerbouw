@@ -148,19 +148,6 @@ node *INITdeclarations (node *arg_node, info *arg_info){
 
   FUNBODY_VARDEC( arg_node)= TRAVopt(FUNBODY_VARDEC(arg_node), arg_info);
   FUNBODY_STATEMENT( arg_node)= TRAVopt(FUNBODY_STATEMENT(arg_node), arg_info);
-  //printf("aantal fors: %d", INFO_AMOUNTFOR(arg_info));
-  /*if(INFO_COUNTFORS(arg_info) > 0){
-    for(int i = 0; i < INFO_COUNTFORS(arg_info); i++){
-      node *stmts = TBmakeStmts(INFO_FORASSIGNS(arg_info)[i], FUNBODY_STATEMENT(arg_node));
-      FUNBODY_STATEMENT(arg_node) = stmts; 
-      INFO_FORASSIGNS(arg_info)[i] = NULL;
-      printf("assign toevoegen aan statements in funbody\n");
-    }
-    INFO_COUNTFORS(arg_info) = 0;
-  }
-  else{
-    printf("geen for\n");
-  }*/
   FUNBODY_LOCALFUNDEFS( arg_node)= TRAVopt(FUNBODY_LOCALFUNDEFS(arg_node), arg_info);
 
 
@@ -176,6 +163,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
       node *vardec = TBmakeVardec(VARDEC_TYPE(arg_node), VARDEC_NAME(arg_node), NULL, NULL, VARDEC_NEXT(arg_node));
       node *varlet = TBmakeVarlet(VARDEC_NAME(arg_node), NULL);
       node *assign = TBmakeAssign(varlet, VARDEC_INIT(arg_node));
+      ASSIGN_VARDECNAME(assign) = STRcpy(VARDEC_NAME(arg_node));
 
        if(FUNBODY_STATEMENT(INFO_ROOTNODE(arg_info)) == NULL){
         stmts = TBmakeStmts(assign, NULL);

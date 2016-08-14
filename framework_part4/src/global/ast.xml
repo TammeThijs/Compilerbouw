@@ -1169,7 +1169,20 @@
       </targets>
     </son>
   </sons>
-  <attributes />
+  <attributes>
+    <attribute name="VarDecName">
+      <type name="String">
+        <targets>
+          <target mandatory="no">
+            <any />
+            <phases>
+              <all />
+            </phases>
+          </target>
+        </targets>
+      </type>
+    </attribute>
+  </attributes>
 </node>
 <!--
  Node BinOp:
