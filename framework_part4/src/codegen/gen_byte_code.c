@@ -746,7 +746,7 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	else{
 		sprintf(buffer, "%d", place);
 		printf("storen op info_scope %d en symbol_scope: %d\n", INFO_SCOPE(arg_info), SYMBOL_SCOPE(VARLET_DECL(arg_node)));
-		sprintf(buffer2, "%d ", INFO_SCOPE(arg_info) - SYMBOL_SCOPE(VARLET_DECL(arg_node)));
+		sprintf(buffer2, "%d ", SYMBOL_SCOPE(VARLET_DECL(arg_node)));
 		char *string = STRcatn(3, "   ", type, "storen ");
 		char *command = STRcatn(4, string, buffer2, buffer, "\n");
 		fputs(command, INFO_CODE(arg_info));

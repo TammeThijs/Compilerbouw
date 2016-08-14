@@ -56,6 +56,7 @@
             <node name="Stmts"/>
             <node name="For"/>
             <node name="FunBody" />
+            <node name="Var" />
           </travuser>
         </traversal>
 
@@ -75,6 +76,7 @@
             <node name="Program" />
             <node name="FunDef" />
             <node name="Funcall" />
+            <node name="FunBody" />
             <node name="Assign" />
             <node name="VarLet" />
             <node name="Var" />

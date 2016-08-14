@@ -29,13 +29,20 @@
   node *funbody;
   node *root_fun_vardec;
   int state;
+  int forcount[5];
+  char *forvar[5];
+  int forinforcount;
+  int totalforcount;
 };
 
 #define INFO_ROOT_NODE(n) ((n)->root_node)
 #define INFO_ROOT_FUNBODY(n) ((n)->funbody)
 #define INFO_FUN_VARDEC(n) ((n)->root_fun_vardec)
 #define INFO_STATE(n) ((n)->state)
-
+#define INFO_FORCOUNT(n) ((n)->forcount)
+#define INFO_FORVARNAME(n) ((n)->forvar)
+#define INFO_FORINFORCOUNT(n) ((n)->forinforcount)
+#define INFO_TOTALFORCOUNT(n) ((n)->totalforcount)
 #define RENAME_STR_SIZE 20
 
 
@@ -51,7 +58,8 @@ static info *MakeInfo(void)
   INFO_ROOT_FUNBODY( result) = NULL;
   INFO_FUN_VARDEC( result) = NULL;
   INFO_STATE( result) = 0;
-
+  INFO_FORINFORCOUNT( result) = 0;
+  INFO_TOTALFORCOUNT( result) = 0;
   DBUG_RETURN( result);
 }
 
@@ -157,6 +165,7 @@ node *SYMfundef( node *arg_node, info *arg_info)
 {
   node * fsymbol;
   DBUG_ENTER("SYMfundef");
+  INFO_TOTALFORCOUNT(arg_info) = 0;
   if(FUNDEF_EXTERN(arg_node) == TRUE){
     fsymbol =  TBmakeFsymbol(arg_node, FUNDEF_NAME(arg_node), INFO_STATE(arg_info), TRUE, NULL);
   }
@@ -323,17 +332,21 @@ node *SYMstmts( node *arg_node, info * arg_info)
 //put loopvar in symbol table. 
 node *SYMfor( node *arg_node, info *arg_info)
 {
-  DBUG_ENTER("SYMfor");  
-
+  DBUG_ENTER("SYMfor"); 
+  INFO_TOTALFORCOUNT(arg_info) = INFO_TOTALFORCOUNT(arg_info) + 1;
+  INFO_FORINFORCOUNT(arg_info)  = INFO_FORINFORCOUNT(arg_info) + 1;
+  INFO_FORCOUNT(arg_info)[INFO_FORINFORCOUNT(arg_info)] = INFO_TOTALFORCOUNT(arg_info);
   char *name;
   char buffer[RENAME_STR_SIZE];
-
+  char buffercount[5];
   node *vardec = FOR_STARTVARDEC(arg_node);
   node *symbol = TBmakeSymbol(T_int, VARDEC_NAME(vardec), INFO_STATE(arg_info), FALSE, FALSE, NULL);
+  INFO_FORVARNAME(arg_info)[INFO_FORINFORCOUNT(arg_info)] = VARDEC_NAME(vardec);
   snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
-
+  sprintf(buffercount, "%d", INFO_FORCOUNT(arg_info)[INFO_FORINFORCOUNT(arg_info)]);
   name = STRcpy(SYMBOL_NAME( symbol));
-  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  SYMBOL_NAME( symbol) = STRcatn(3, buffer , name, buffercount);
+  printf("for variabele hernoemd: %s", SYMBOL_NAME(symbol));
   VARDEC_NAME(vardec) = SYMBOL_NAME(symbol);
 
   node *tmpvar = TBmakeVar(SYMBOL_NAME(symbol), NULL);
@@ -358,13 +371,35 @@ node *SYMfor( node *arg_node, info *arg_info)
   FUNDEF_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
   }
 
-  FOR_BLOCK(arg_node) = TRAVopt(FOR_BLOCK(arg_node), arg_info);
-  FOR_BLOCKSINGLE(arg_node) = TRAVopt(FOR_BLOCKSINGLE(arg_node), arg_info);
-
+    FOR_BLOCK(arg_node) = TRAVopt(FOR_BLOCK(arg_node), arg_info);
+    FOR_BLOCKSINGLE(arg_node) = TRAVopt(FOR_BLOCKSINGLE(arg_node), arg_info);
+  
+  
+  INFO_FORVARNAME(arg_info) [INFO_FORINFORCOUNT(arg_info)]= "";
+  INFO_FORINFORCOUNT(arg_info) = INFO_FORINFORCOUNT(arg_info)-1;
   MEMfree(name);
   DBUG_RETURN(arg_node);
 }
-
+node *SYMvar(node *arg_node, info *arg_info){
+  DBUG_ENTER("SYMvar");
+  if(STReq(VAR_NAME(arg_node), INFO_FORVARNAME(arg_info)[INFO_FORINFORCOUNT(arg_info)])){
+    char buffer[5];
+    sprintf(buffer, "%d", INFO_FORCOUNT(arg_info)[INFO_FORINFORCOUNT(arg_info)]);
+    VAR_NAME(arg_node) = STRcat(VAR_NAME(arg_node), buffer);
+    printf("nieuwe var name: %s\n", VAR_NAME(arg_node));
+  }
+  else if(INFO_FORINFORCOUNT(arg_info) > 1){
+    for(int i = INFO_FORINFORCOUNT(arg_info); i >0; i--){
+      if(STReq(VAR_NAME(arg_node), INFO_FORVARNAME(arg_info)[i])){
+      char buffer[5];
+      sprintf(buffer, "%d", INFO_FORCOUNT(arg_info)[i]);
+      VAR_NAME(arg_node) = STRcat(VAR_NAME(arg_node), buffer);
+      printf("nieuwe var name: %s\n", VAR_NAME(arg_node));
+  }
+    }
+  }
+  DBUG_RETURN(arg_node);
+}
 /*
  * Traversal start function
  */
