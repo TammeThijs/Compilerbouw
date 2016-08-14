@@ -95,7 +95,7 @@ node *INITdeclarations (node *arg_node, info *arg_info){
   if(INFO_FIRSTTIME(arg_info) == 0 && DECLARATIONS_DECL(arg_node) != NULL){
 
     initbody = TBmakeFunbody(NULL, NULL, NULL);
-    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), FALSE, FALSE, NULL, initbody, NULL, NULL);
+    fundef = TBmakeFundef(T_unknown, STRcpy("__init"), TRUE, FALSE, NULL, initbody, NULL, NULL);
     declarations = TBmakeDeclarations(fundef, arg_node);
 
     INFO_FUNBODY(arg_info) = initbody;
@@ -201,7 +201,7 @@ node *INITstmts (node *arg_node, info *arg_info){
  }
 node *INITfor (node *arg_node, info *arg_info){
   DBUG_ENTER("INITfor");
-  node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
+ /* node *vardec = TBmakeVardec(T_int, STRcpy(FOR_LOOPVAR(arg_node)), NULL, NULL, NULL);
   node *varlet = TBmakeVarlet(FOR_LOOPVAR(arg_node), NULL);
   node *assign = TBmakeAssign(varlet, FOR_START(arg_node));
   node *var = TBmakeVar(FOR_LOOPVAR(arg_node), NULL);
@@ -209,7 +209,7 @@ node *INITfor (node *arg_node, info *arg_info){
   vardec = TBmakeVardec(T_int, FOR_LOOPVAR(arg_node), NULL, NULL, FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)));
   FUNBODY_VARDEC(INFO_ROOTNODE(arg_info)) = vardec;
   INFO_FORASSIGNS(arg_info)[INFO_AMOUNTFOR(arg_info)] = assign;
-  INFO_AMOUNTFOR(arg_info) = INFO_AMOUNTFOR(arg_info) + 1;
+  INFO_AMOUNTFOR(arg_info) = INFO_AMOUNTFOR(arg_info) + 1;*/
   DBUG_RETURN(arg_node);
 }
 

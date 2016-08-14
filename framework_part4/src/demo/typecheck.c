@@ -214,7 +214,7 @@ extern node *CTfunbody( node *arg_node, info *arg_info);
 		node *expr = CAST_EXPRESSION(arg_node);
 		node *then = TBmakeNum(1);
 		node *other = TBmakeNum(0);
-		node *condexpr = TBmakeConditionexpr(expr, then, other);
+		node *condexpr = TBmakeConditionexpr(expr, other, then);
 		arg_node = condexpr;
 	}
 	else if(exprType == T_boolean && castType == T_float){

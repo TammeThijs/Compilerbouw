@@ -204,7 +204,7 @@ dowhile: DO CURLY_BRACKET_L stmts CURLY_BRACKET_R WHILE BRACKET_L expr BRACKET_R
 
 if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX 
         {
-            $$ = TBmakeIf($3, $5, NULL);
+            $$ = TBmakeIf($3, TBmakeStmts($5, NULL), NULL);
         }
         |
         IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts %prec IFX CURLY_BRACKET_R
@@ -214,7 +214,7 @@ if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX
         |
         IF BRACKET_L expr BRACKET_R stmt ELSE stmt
         {
-            $$ = TBmakeIf($3, $5, $7);
+            $$ = TBmakeIf($3, TBmakeStmts($5, NULL), TBmakeStmts($7, NULL));
         }
         |
         IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R ELSE CURLY_BRACKET_L stmts CURLY_BRACKET_R
@@ -224,12 +224,12 @@ if:     IF BRACKET_L expr BRACKET_R stmt %prec IFX
         |
         IF BRACKET_L expr BRACKET_R stmt ELSE CURLY_BRACKET_L stmts CURLY_BRACKET_R
         {
-          $$ = TBmakeIf( $3, $5, $8);
+          $$ = TBmakeIf( $3, TBmakeStmts($5, NULL), $8);
         }
         |
         IF BRACKET_L expr BRACKET_R CURLY_BRACKET_L stmts CURLY_BRACKET_R ELSE stmt
         {
-          $$ = TBmakeIf( $3, $6, $9);
+          $$ = TBmakeIf( $3, $6, TBmakeStmts($9, NULL));
         }        
         ;
 

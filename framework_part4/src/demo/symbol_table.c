@@ -95,12 +95,12 @@ node *SYMglobaldec( node *arg_node, info * arg_info)
   char buffer[RENAME_STR_SIZE];
 
   node *symbol = TBmakeSymbol(GLOBALDEC_TYPE( arg_node), STRcpy(GLOBALDEC_NAME( arg_node)), INFO_STATE(arg_info), TRUE, FALSE, NULL);
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
-
+  //snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
+  printf("symbol voor externe variabele gemaak\n");
   name = STRcpy(SYMBOL_NAME( symbol));
-  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  //SYMBOL_NAME( symbol) = STRcat(buffer , name);
   GLOBALDEC_NAME(arg_node) = SYMBOL_NAME(symbol);
-
+  SYMBOL_STATE(symbol) = -1;
   //if there is no program symboltable then make one.
   if(PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) == NULL){
     PROGRAM_SYMBOLTABLE(INFO_ROOT_NODE(arg_info)) = symbol;
@@ -130,10 +130,10 @@ node *SYMglobaldef(node *arg_node, info *arg_info)
     symbol = TBmakeSymbol(GLOBALDEF_TYPE( arg_node), STRcpy(GLOBALDEF_NAME( arg_node)), INFO_STATE(arg_info), FALSE, FALSE, NULL);
   }
   
-  snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
+  //snprintf(buffer, RENAME_STR_SIZE, "%p_", (void*)&symbol);
 
   name = STRcpy(SYMBOL_NAME( symbol));
-  SYMBOL_NAME( symbol) = STRcat(buffer , name);
+  //SYMBOL_NAME( symbol) = STRcat(buffer , name);
   GLOBALDEF_NAME(arg_node) = SYMBOL_NAME(symbol);
 
   //make a symbol table if there is none.

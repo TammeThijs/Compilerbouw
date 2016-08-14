@@ -30,12 +30,14 @@ struct INFO {
 	int importvarcount;
 	int exportvarcount;
 	int globalvarcount;
+	int globalvarletcount;
 	node *consts [50];
 	node *exportfun [50];
 	node *importfun [50];
 	node *importvar [50];
 	node *exportvar [50];
 	node *globalvar [50];
+	node * root;
 	int scope;
 };
 
@@ -48,6 +50,7 @@ struct INFO {
 #define INFO_IMPORTVARCOUNT(n) ((n)->importvarcount)
 #define INFO_EXPORTVARCOUNT(n) ((n)->exportvarcount)
 #define INFO_GLOBALVARCOUNT(n) ((n)->globalvarcount)
+#define INFO_GLOBALVARLETCOUNT(n) ((n)->globalvarletcount)
 #define INFO_CONSTS(n) ((n)->consts)
 #define INFO_EXPORTFUN(n) ((n)->exportfun)
 #define INFO_IMPORTFUN(n) ((n)->importfun)
@@ -55,6 +58,7 @@ struct INFO {
 #define INFO_EXPORTVAR(n) ((n)->exportvar)
 #define INFO_GLOBALVAR(n) ((n)->globalvar)
 #define INFO_SCOPE(n) ((n)->scope)
+#define INFO_ROOT(n) ((n)->root)
 
 static info *MakeInfo(void)
 {
@@ -72,7 +76,9 @@ static info *MakeInfo(void)
 	INFO_IMPORTVARCOUNT(result) = 0;
 	INFO_EXPORTVARCOUNT(result) = 0;
 	INFO_GLOBALVARCOUNT(result) = 0;
+	INFO_GLOBALVARLETCOUNT( result) = 0;
 	INFO_SCOPE(result) = -1;
+	INFO_ROOT(result) = NULL;
 	DBUG_RETURN( result);
 }
 
@@ -88,6 +94,7 @@ static info *FreeInfo( info *info)
 node *GBCprogram(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCprogram");
 	printf("in het programma\n");
+	INFO_ROOT(arg_info) = arg_node;
 	PROGRAM_DECLARATIONS(arg_node) = TRAVdo(PROGRAM_DECLARATIONS(arg_node), arg_info);
 	char buffer[20];
 	char *command;
@@ -106,7 +113,8 @@ node *GBCprogram(node *arg_node, info *arg_info){
 		}
 	}
 	for(int i = 0; i<INFO_EXPORTFUNCOUNT(arg_info); i++){
-		printf("export fun table maken\n");
+		if(!(STReq(FUNDEF_NAME(INFO_EXPORTFUN(arg_info)[i]), "__init") && PROGRAM_SYMBOLTABLE(arg_node)== NULL)){
+			printf("export fun table maken\n");
 		node *fun = INFO_EXPORTFUN(arg_info)[i];
 		command = STRcatn(4, ".exportfun ", "\"", FUNDEF_NAME(fun), "\" ");
 		if(FUNDEF_TYPE(fun) == T_int){
@@ -140,6 +148,8 @@ node *GBCprogram(node *arg_node, info *arg_info){
 		command = STRcatn(3, command, FUNDEF_NAME(fun), "\n");
 		fputs(command, INFO_CODE(arg_info));
 	}
+		}
+		
 
 	for(int i = 0; i<INFO_IMPORTFUNCOUNT(arg_info); i++){
 		printf("assembly code import table maken");
@@ -307,7 +317,7 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 		
 	}
-	else if(STReq(FUNDEF_NAME(arg_node), init_name) && FUNDEF_FUNBODY(arg_node)!= NULL){
+	else if(STReq(FUNDEF_NAME(arg_node), init_name) && PROGRAM_SYMBOLTABLE(INFO_ROOT(arg_info)) != NULL){
 		fputs("__init:\n", INFO_CODE(arg_info));
 		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
 	}
@@ -341,14 +351,16 @@ node *GBCfundef(node *arg_node, info *arg_info){
 
 node *GBCglobaldef( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCglobaldef");
-	/*GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
+	GLOBALDEF_DIMS(arg_node) = TRAVopt(GLOBALDEF_DIMS(arg_node), arg_info);
+	
 	INFO_GLOBALVAR(arg_info)[INFO_GLOBALVARCOUNT(arg_info)] = arg_node;
 	INFO_GLOBALVARCOUNT(arg_info) = INFO_GLOBALVARCOUNT(arg_info) + 1;
+		
 	if(GLOBALDEF_EXPORT(arg_node) == TRUE){
 		INFO_EXPORTVAR(arg_info)[INFO_EXPORTVARCOUNT(arg_info)] = arg_node;
 		INFO_EXPORTVARCOUNT(arg_info) = INFO_EXPORTVARCOUNT(arg_info) + 1;
 	}
-	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);*/
+	GLOBALDEF_INIT(arg_node) = TRAVopt(GLOBALDEF_INIT(arg_node), arg_info);
 	DBUG_RETURN(arg_node);
 }
 
@@ -584,12 +596,28 @@ node *GBCvar( node *arg_node, info *arg_info){
 	else{
 		type = "b";
 	}
-	if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
+	if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0 && !SYMBOL_EXTERN(VAR_DECL(arg_node))){
 		place = 0;
 		bool gevonden = FALSE;
 		while(!gevonden && place < INFO_GLOBALVARCOUNT(arg_info)){
 			node *globalvar = INFO_GLOBALVAR(arg_info)[place];
 			if(GLOBALDEF_NAME(globalvar) == VAR_NAME(arg_node)){
+				gevonden = TRUE;
+			}
+			else{
+				place ++;
+			}
+			
+		}
+		SYMBOL_STATE(VAR_DECL(arg_node)) = place;
+	}
+	else if(SYMBOL_STATE(VAR_DECL(arg_node)) == place && SYMBOL_EXTERN(VAR_DECL(arg_node))){
+		printf("zoeken naar externe variabele...\n");
+		place = 0;
+		bool gevonden = FALSE;
+		while(!gevonden && place < INFO_IMPORTVARCOUNT(arg_info)){
+			node *importvar = INFO_IMPORTVAR(arg_info)[place];
+			if(GLOBALDEC_NAME(importvar) == VAR_NAME(arg_node)){
 				gevonden = TRUE;
 			}
 			else{
@@ -605,7 +633,13 @@ node *GBCvar( node *arg_node, info *arg_info){
 	}
 
 	place = SYMBOL_STATE(VAR_DECL(arg_node));
-	if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
+	if(SYMBOL_EXTERN(VAR_DECL(arg_node)) == TRUE){
+		sprintf(buffer, "%d", place);
+		char *string = STRcatn(3, "   ", type,"loade ");
+		char *command = STRcatn(3, string, buffer, "\n");
+		fputs(command, INFO_CODE(arg_info));
+	}
+	else if(SYMBOL_SCOPE(VAR_DECL(arg_node)) == 0){
 		sprintf(buffer, "%d", place);
 		char *string = STRcatn(3, "   ", type,"loadg ");
 		char *command = STRcatn(3, string, buffer, "\n");
@@ -668,19 +702,9 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	}
 
 	if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place && SYMBOL_SCOPE(VARLET_DECL(arg_node)) == 0){
-		place = 0;
-		bool gevonden = FALSE;
-		while(!gevonden && place < INFO_GLOBALVARCOUNT(arg_info)){
-			node *globalvar = INFO_GLOBALVAR(arg_info)[place];
-			if(GLOBALDEF_NAME(globalvar) == VARLET_NAME(arg_node)){
-				gevonden = TRUE;
-			}
-			else{
-				place ++;
-			}
-			
-		}
-		SYMBOL_STATE(VARLET_DECL(arg_node)) = place;
+		
+		SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_GLOBALVARLETCOUNT(arg_info);
+		INFO_GLOBALVARLETCOUNT(arg_info) = INFO_GLOBALVARLETCOUNT(arg_info) + 1;
 	}
 	else if(SYMBOL_STATE(VARLET_DECL(arg_node)) == place && SYMBOL_SCOPE(VARLET_DECL(arg_node)) == (INFO_SCOPE(arg_info) + 1)){
 		SYMBOL_STATE(VARLET_DECL(arg_node)) = INFO_VARCOUNT(arg_info);
@@ -758,7 +782,17 @@ node *GBCconditionexpr( node *arg_node, info *arg_info){
 
 node *GBCexprstmt( node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCexprstmt");
+	printf("in de exprstmt \n");
 	EXPRSTMT_EXPR(arg_node) = TRAVdo(EXPRSTMT_EXPR(arg_node), arg_info);
+	if(FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(EXPRSTMT_EXPR(arg_node)))) == T_int){
+		fputs("   ipop\n", INFO_CODE(arg_info));
+	}
+	else if(FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(EXPRSTMT_EXPR(arg_node)))) == T_float){
+		fputs("   fpop\n", INFO_CODE(arg_info));
+	}
+	else if(FUNDEF_TYPE(FSYMBOL_FUNCTION(FUNCALL_DECL(EXPRSTMT_EXPR(arg_node)))) == T_boolean){
+		fputs("   bpop\n", INFO_CODE(arg_info));
+	}
 	DBUG_RETURN(arg_node);
 }
 

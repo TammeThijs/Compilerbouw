@@ -3,11 +3,8 @@ extern void printSpaces(int num);
 extern void printNewlines(int num);
 
 export int main() {
-    for(int j=0, 4) {
-        printInt(j);
-        printSpaces(1);
-    }
-
+    int d;
+    d = (int)(a<b&&c>d);
     
 
     return 0;
