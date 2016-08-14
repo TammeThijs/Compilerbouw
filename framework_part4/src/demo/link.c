@@ -51,10 +51,17 @@ info *push(info *arg_info, node *symbol){
 }
 
 info *add(info * arg_info, node *fsymbol){
-  INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
   INFO_LIST(arg_info)[INFO_COUNTER(arg_info)] = fsymbol;
+  INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info)+1;
   return arg_info;
 }
+
+info *del(info *arg_info){
+  INFO_COUNTER(arg_info) = INFO_COUNTER(arg_info) - 1;
+  INFO_LIST(arg_info)[INFO_COUNTER(arg_info)] = NULL;
+  return arg_info;
+}
+
 info *pop(info *arg_info){
   INFO_STACK(arg_info)[INFO_TOP(arg_info)] = NULL;
   INFO_TOP(arg_info) = INFO_TOP(arg_info) -1;
@@ -118,7 +125,9 @@ node *LINKfundef( node *arg_node, info *arg_info){
     INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
     arg_info = pop(arg_info); 
   }
-  
+  if(FUNDEF_FSYMBOLTABLE(arg_node)!= NULL){
+    arg_info = del(arg_info);
+  }
 
   DBUG_RETURN(arg_node);
 }
@@ -143,18 +152,13 @@ node *LINKvar(node *arg_node, info *arg_info){
     else{
       char *symbolName = SYMBOL_NAME(symbol);
       char *varName = VAR_NAME(arg_node);
-      printf("SYMBOLNAME %s\n", symbolName);
-      printf("Varname %s\n", varName);
 
       if(STRsuffix(varName, symbolName)){
         if(STReq(symbolName, INFO_VARDECNAME(arg_info))){
-          printf("Ze zijn gelijk\n");
-          symbol = SYMBOL_NEXT(symbol);
+          symbol = NULL;
         } else {       
-          printf("GEVONDEN\n");
           VAR_DECL(arg_node) = symbol;
           VAR_NAME(arg_node) = SYMBOL_NAME(symbol);
-          printf("SYMBOL NAME%s\n", SYMBOL_NAME(symbol));
           found = true;
           SYMBOL_STATE(symbol) = -1;
         }
@@ -242,7 +246,7 @@ node *LINKfuncall(node *arg_node, info *arg_info){
   node *fsymbol = INFO_LIST(arg_info)[i];
   bool found = false;
   
-  while(!found && i > 0){
+  while(!found && i >= 0){
     while(fsymbol == NULL && i>0){
       i--;
       fsymbol = INFO_LIST(arg_info)[i];

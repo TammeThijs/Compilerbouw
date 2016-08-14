@@ -284,6 +284,8 @@ node *GBCfundefs(node *arg_node, info *arg_info){
 //check if function name = main, if so then traverse
 node *GBCfundef(node *arg_node, info *arg_info){
 	DBUG_ENTER("GBCfundef");
+
+	INFO_FUNDEFTYPE(arg_info) = FUNDEF_TYPE(arg_node);
 	char *main_name = "main";
 	char *init_name = "__init";
 	char buffer[20];
@@ -348,8 +350,12 @@ node *GBCfundef(node *arg_node, info *arg_info){
 			fputs(command, INFO_CODE(arg_info));
 		}
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) + 1;
-		INFO_FUNDEFTYPE(arg_info) = FUNDEF_TYPE(arg_node);
-		FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+		if(FUNDEF_FUNBODY(arg_node)!=NULL){
+			FUNDEF_FUNBODY(arg_node) = TRAVopt(FUNDEF_FUNBODY(arg_node), arg_info);
+		}
+		else{
+			fputs("   return\n", INFO_CODE(arg_info));
+		}
 		
 		INFO_SCOPE(arg_info) = INFO_SCOPE(arg_info) - 1;
 	}
@@ -739,6 +745,7 @@ node *GBCvarlet( node *arg_node, info *arg_info){
 	}
 	else{
 		sprintf(buffer, "%d", place);
+		printf("storen op info_scope %d en symbol_scope: %d\n", INFO_SCOPE(arg_info), SYMBOL_SCOPE(VARLET_DECL(arg_node)));
 		sprintf(buffer2, "%d ", INFO_SCOPE(arg_info) - SYMBOL_SCOPE(VARLET_DECL(arg_node)));
 		char *string = STRcatn(3, "   ", type, "storen ");
 		char *command = STRcatn(4, string, buffer2, buffer, "\n");
